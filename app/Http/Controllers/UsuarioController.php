@@ -18,6 +18,7 @@ class UsuarioController extends Controller
         $usuario = Usuario::find($id);
         
         if ($usuario) {
+            echo "cheguei aqui";
             return response()->json($usuario);
         } else {
             return response()->json(['message' => 'Usuário não encontrado'], 404);
