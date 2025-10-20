@@ -15,49 +15,53 @@ class UsuarioController extends Controller
 
     public function show($id)
     {
-        $usuario = Usuario::find($id);
+        return response()->json(['message' => 'Bem vindo a rota show']);
+        // $usuario = Usuario::find($id);
         
-        if ($usuario) {
-            echo "cheguei aqui";
-            return response()->json($usuario);
-        } else {
-            return response()->json(['message' => 'Usuário não encontrado'], 404);
-        }
+        // if ($usuario) {
+        //     echo "cheguei aqui";
+        //     return response()->json($usuario);
+        // } else {
+        //     return response()->json(['message' => 'Usuário não encontrado'], 404);
+        // }
     }
 
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'nome' => 'required|string|max:100',
-            'email' => 'required|string|email|max:255|unique:USUARIOS,email',
-            'senha' => 'required|string|min:8',
-            'cpf' => 'required|string|max:14|unique:USUARIOS,cpf',
-            'idade' => 'required|integer|min:12',
-            'tipo_usuario' => 'required|string|in:sindico,porteiro,morador,prestador,visitante'
-        ]);
+        return response()->json(['message' => 'Bem vindo a rota store']);
+        
+        // $validatedData = $request->validate([
+        //     'nome' => 'required|string|max:100',
+        //     'email' => 'required|string|email|max:255|unique:USUARIOS,email',
+        //     'senha' => 'required|string|min:8',
+        //     'cpf' => 'required|string|max:14|unique:USUARIOS,cpf',
+        //     'idade' => 'required|integer|min:12',
+        //     'tipo_usuario' => 'required|string|in:sindico,porteiro,morador,prestador,visitante'
+        // ]);
 
-        $usuario = Usuario::create($validatedData);
-        return response()->json($usuario, 201);
+        // $usuario = Usuario::create($validatedData);
+        // return response()->json($usuario, 201);
     }
 
     public function update(Request $request, $id)
     {
-        $usuario = Usuario::find($id);
-        if (!$usuario) {
-            return response()->json(['message' => 'Usuário não encontrado'], 404);
-        }
+        return response()->json(['message' => 'Bem vindo a rota update']);
+        // $usuario = Usuario::find($id);
+        // if (!$usuario) {
+        //     return response()->json(['message' => 'Usuário não encontrado'], 404);
+        // }
 
-        $validatedData = $request->validate([
-            'nome' => 'sometimes|required|string|max:255',
-            'email' => 'sometimes|required|string|email|max:255|unique:USUARIOS,email,' . $id . ',id_usuario',
-            'senha' => 'sometimes|required|string|min:8',
-            'cpf' => 'sometimes|required|string|max:14|unique:USUARIOS,cpf,' . $id . ',id_usuario',
-            'idade' => 'sometimes|required|integer|min:0',
-            'tipo_usuario' => 'sometimes|required|string|in:morador,porteiro,sindico'
-        ]);
+        // $validatedData = $request->validate([
+        //     'nome' => 'sometimes|required|string|max:255',
+        //     'email' => 'sometimes|required|string|email|max:255|unique:USUARIOS,email,' . $id . ',id_usuario',
+        //     'senha' => 'sometimes|required|string|min:8',
+        //     'cpf' => 'sometimes|required|string|max:14|unique:USUARIOS,cpf,' . $id . ',id_usuario',
+        //     'idade' => 'sometimes|required|integer|min:0',
+        //     'tipo_usuario' => 'sometimes|required|string|in:morador,porteiro,sindico'
+        // ]);
 
-        $usuario->update($validatedData);
-        return response()->json($usuario);
+        // $usuario->update($validatedData);
+        // return response()->json($usuario);
     }
 
     public function destroy($id)
