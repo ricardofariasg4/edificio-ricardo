@@ -1,0 +1,20 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Morador extends Model
+{
+    /** @use HasFactory<\Database\Factories\MoradorFactory> */
+    use HasFactory;
+    
+    protected $table = 'MORADORES';
+    protected $primaryKey = 'id_usuario';
+
+    protected $fillable = [
+        'id_usuario',
+        'numero_apto',
+    ];
+}
