@@ -58,4 +58,44 @@ class Usuario extends Authenticatable
     {
         return $this->senha;
     }
+
+    public function sindico()
+    {
+        return $this->hasOne(Sindico::class, 'id_usuario');
+    }
+
+    public function porteiro()
+    {
+        return $this->hasOne(Porteiro::class, 'id_usuario');
+    }
+
+    public function morador()
+    {
+        return $this->hasOne(Morador::class, 'id_usuario');
+    }
+
+    public function prestadorDeServico()
+    {
+        return $this->hasOne(PrestadorDeServico::class, 'id_usuario');
+    }
+
+    public function visitante()
+    {
+        return $this->hasOne(Visitante::class, 'id_usuario');
+    }
+
+    public function encomenda()
+    {
+        return $this->hasMany(Encomenda::class, 'id_entregador');
+    }
+
+    // public function mudancasAutorizadas()
+    // {
+    //     return $this->hasMany(Mudanca::class, 'id_autorizador');
+    // }
+
+    public function boletosNotificados()
+    {
+        return $this->hasMany(Boleto::class, 'id_notificador');
+    }
 }

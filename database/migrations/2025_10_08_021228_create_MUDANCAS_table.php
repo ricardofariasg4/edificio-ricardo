@@ -17,6 +17,7 @@ return new class extends Migration
             $table->enum('status', ['pendente', 'aprovado', 'em_andamento', 'finalizado'])->nullable();
             $table->unsignedInteger('id_morador')->index('idx_mudanca_usuario_idmorador');
             $table->unsignedInteger('id_autorizador')->index('idx_mudanca_usuario_idautorizador');
+            $table->timestamps();
         });
     }
 

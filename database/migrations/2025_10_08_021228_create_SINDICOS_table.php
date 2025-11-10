@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('SINDICOS', function (Blueprint $table) {
             $table->unsignedInteger('id_usuario')->index('idx_sindico_usuario_idusuario');
-
             $table->primary(['id_usuario']);
+            $table->timestamps();
         });
     }
 

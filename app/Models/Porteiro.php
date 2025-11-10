@@ -17,4 +17,9 @@ class Porteiro extends Model
         'id_usuario',
         'turno_de_trabalho',
     ];
+
+    public function usuario()
+    {
+        return $this->belongsTo(Usuario::class, 'id_usuario');
+    }
 }

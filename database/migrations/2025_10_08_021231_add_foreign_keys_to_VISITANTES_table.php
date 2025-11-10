@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::table('VISITANTES', function (Blueprint $table) {
             $table->foreign(['id_usuario'], 'fk_visitante_usuario_idUsuario')->references(['id_usuario'])->on('USUARIOS')->onUpdate('no action')->onDelete('cascade');
+            $table->foreign(['visita_de'], 'fk_visitante_usuario_visita_de')->references(['id_usuario'])->on('USUARIOS')->onUpdate('no action')->onDelete('cascade');
         });
     }
 
@@ -23,6 +24,7 @@ return new class extends Migration
     {
         Schema::table('VISITANTES', function (Blueprint $table) {
             $table->dropForeign('fk_visitante_usuario_idUsuario');
+            $table->dropForeign('fk_visitante_usuario_visita_de');
         });
     }
 };

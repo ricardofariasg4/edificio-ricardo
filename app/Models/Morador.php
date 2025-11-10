@@ -17,4 +17,9 @@ class Morador extends Model
         'id_usuario',
         'numero_apto',
     ];
+
+    public function usuario()
+    {
+        return $this->belongsTo(Usuario::class, 'id_usuario');
+    }
 }

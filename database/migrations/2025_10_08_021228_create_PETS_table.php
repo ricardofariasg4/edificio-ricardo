@@ -18,6 +18,7 @@ return new class extends Migration
             $table->boolean('vacinado')->nullable();
             $table->char('cpf', 11)->nullable()->unique('cpf_unique');
             $table->unsignedInteger('id_morador')->index('idx_pet_morador_idmorador');
+            $table->timestamps();
         });
     }
 

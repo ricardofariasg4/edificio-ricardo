@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('codigo_rastreio', 45)->index('idx_encomenda_usuario_codrastreio');
             $table->dateTime('data_recebimento');
             $table->unsignedInteger('id_usuario')->index('idx_encomenda_usuario_idusuario');
+            $table->timestamps();
         });
     }
 

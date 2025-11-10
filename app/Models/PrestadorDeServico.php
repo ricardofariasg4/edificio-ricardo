@@ -24,4 +24,9 @@ class PrestadorDeServico extends Model
         'id_usuario',
         'data_ultimo_trabalho',
     ];
+
+    public function usuario()
+    {
+        return $this->belongsTo(Usuario::class, 'id_usuario');
+    }
 }

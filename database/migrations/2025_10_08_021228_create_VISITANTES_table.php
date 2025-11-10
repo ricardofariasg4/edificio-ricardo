@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('VISITANTES', function (Blueprint $table) {
             $table->unsignedInteger('id_usuario')->primary();
+            $table->unsignedInteger('visita_de');
+            $table->timestamps();
         });
     }
 

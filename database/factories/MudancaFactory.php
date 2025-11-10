@@ -1,0 +1,33 @@
+<?php
+
+namespace Database\Factories;
+
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Mudanca>
+ */
+class MudancaFactory extends Factory
+{
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition(): array
+    {
+        $possiveisAutorizadores = [
+            \App\Models\Sindico::inRandomOrder()->value('id_usuario'),
+            \App\Models\Porteiro::inRandomOrder()->value('id_usuario')
+        ];
+        
+        $autorizador = $this->faker->randomElement($possiveisAutorizadores);
+        
+        return [
+            'data' => $this->faker->date(),
+            'status' => $this->faker->randomElement(['pendente', 'aprovado', 'em_andamento', 'finalizado']),
+            'id_morador' => \App\Models\Morador::inRandomOrder()->value('id_usuario'),
+            'id_autorizador' => $autorizador,
+        ];
+    }
+}

@@ -16,4 +16,9 @@ class Sindico extends Model
     protected $fillable = [
         'id_usuario',
     ];
+
+    public function usuario()
+    {
+        return $this->belongsTo(Usuario::class, 'id_usuario');
+    }
 }

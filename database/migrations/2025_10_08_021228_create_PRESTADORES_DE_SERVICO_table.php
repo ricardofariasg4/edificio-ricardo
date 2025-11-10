@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('PRESTADORES_DE_SERVICO', function (Blueprint $table) {
             $table->unsignedInteger('id_usuario')->index('idx_prestador_usuario_idusuario');
             $table->dateTime('data_ultimo_trabalho')->nullable();
-
+            $table->timestamps();
             $table->primary(['id_usuario']);
         });
     }

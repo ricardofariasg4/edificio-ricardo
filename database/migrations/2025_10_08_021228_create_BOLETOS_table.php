@@ -18,6 +18,7 @@ return new class extends Migration
             $table->date('vencimento')->nullable();
             $table->decimal('valor', 10)->unsigned()->nullable();
             $table->unsignedInteger('id_notificador')->index('idx_boleto_usuario_idnotificador');
+            $table->timestamps();
         });
     }
 

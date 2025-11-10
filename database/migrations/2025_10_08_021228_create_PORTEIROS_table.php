@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('PORTEIROS', function (Blueprint $table) {
             $table->unsignedInteger('id_usuario')->index('idx_porteiro_usuario_idusuario');
             $table->char('turno_de_trabalho', 1);
-
+            $table->timestamps();
             $table->primary(['id_usuario']);
         });
     }
