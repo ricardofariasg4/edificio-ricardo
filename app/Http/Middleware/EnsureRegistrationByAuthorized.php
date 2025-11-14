@@ -6,9 +6,9 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
-use App\Enum\AuthorizedEmployess;
+use App\Enum\AuthorizedEmployees;
 
-class GaranteCadastroPorAutorizado
+class EnsureRegistrationByAuthorized
 {
     /**
      * Handle an incoming request.
@@ -19,7 +19,7 @@ class GaranteCadastroPorAutorizado
     {
         $user = Auth::user();
 
-        if (!AuthorizedEmployess::tryFrom($user->tipo_usuario)) {
+        if (!AuthorizedEmployees::tryFrom($user->tipo_usuario)) {
             return response()->json(['message' => 'Acesso negado. Apenas síndicos e porteiros podem cadastrar novos usuários.'], 403);
         }
 

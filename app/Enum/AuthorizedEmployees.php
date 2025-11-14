@@ -2,7 +2,7 @@
 
 namespace App\Enum;
 
-enum AuthorizedEmployess: string
+enum AuthorizedEmployees: string
 {
     case SINDICO = 'sindico';
     case PORTEIRO = 'porteiro';

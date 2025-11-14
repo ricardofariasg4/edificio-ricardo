@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UsuarioController;
-use App\Http\Middleware\GaranteCadastroPorAutorizado;
+use App\Http\Middleware\EnsureRegistrationByAuthorized;
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('/register', 'register');
@@ -11,7 +11,7 @@ Route::controller(AuthController::class)->group(function () {
     Route::get('/logout', 'logout')->middleware('auth');
 });
 
-Route::middleware(['auth', GaranteCadastroPorAutorizado::class])->group(function () {
+Route::middleware(['auth', EnsureRegistrationByAuthorized::class])->group(function () {
     Route::controller(UsuarioController::class)->group(function () {
         Route::get('/users', 'index');
         Route::post('/user', 'store');
