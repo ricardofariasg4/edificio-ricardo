@@ -6,4 +6,5 @@ enum AuthorizedEmployees: string
 {
     case SINDICO = 'sindico';
     case PORTEIRO = 'porteiro';
+    case ADMINISTRADOR = 'admin';
 }
