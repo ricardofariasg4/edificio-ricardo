@@ -18,9 +18,11 @@ class EnsureRegistrationByAuthorized
     public function handle(Request $request, Closure $next): Response
     {
         $user = Auth::user();
-
+        
         if (!AuthorizedEmployees::tryFrom($user->tipo_usuario)) {
-            return response()->json(['message' => 'Acesso negado. Apenas síndicos e porteiros podem cadastrar novos usuários.'], 403);
+            return response()->json([
+                'message' => 'Acesso negado. Operação reservada para usuários autorizados.'
+            ], 403);
         }
 
         return $next($request);
