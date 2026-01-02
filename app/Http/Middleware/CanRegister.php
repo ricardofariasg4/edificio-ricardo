@@ -2,10 +2,17 @@
 
 namespace App\Http\Middleware;
 
+use Closure;
+use Illuminate\Http\Request;
+
 class CanRegister
 {
-    public static function canRegister($registrant, $newUserData)
-    {
-        
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     */
+    public function handle(Request $request, Closure $next) {
+
     }
 }

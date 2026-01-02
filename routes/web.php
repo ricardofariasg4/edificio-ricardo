@@ -1,6 +1,6 @@
 <?php
 
-use App\Helpers\CanRegister;
+use App\Http\Middleware\CanRegister;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
