@@ -6,9 +6,11 @@ use Illuminate\Http\Request;
 use App\Services\UserService;
 use App\Helpers\HowToValidate;
 use \Illuminate\Database\Eloquent\Collection;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class UserController extends Controller
 {
+    use AuthorizesRequests;
     protected $userService;
     
     public function __construct(UserService $userService)
@@ -37,7 +39,10 @@ class UserController extends Controller
             'tipo_usuario' => 'required|string|in:sindico,porteiro,morador,prestador,visitante'
         ]);
 
+        $this->authorize('register-internal-member', $request->input('tipo_usuario'));
+        
         $user = $this->userService->createNewUser($validatedData);
+
         return response()->json($user, 201);
     }
 

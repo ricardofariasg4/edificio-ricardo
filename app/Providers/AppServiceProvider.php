@@ -3,11 +3,11 @@
 namespace App\Providers;
 
 use App\Models\Usuario;
-use App\Policies\UserPolicy;
 use Illuminate\Support\ServiceProvider;
 use App\Repositories\UserRepositoryInterface;
 use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\Gate;
+use App\Enum\CanRegister;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +24,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Gate::policy(Usuario::class, UserPolicy::class);
+        Gate::define('register-internal-member', function (Usuario $user, string $targetRole) {
+            $userRole = CanRegister::from($user->tipo_usuario);
+            return $userRole?->canRegisterInternalMember($targetRole);
+        });
     }
 }
