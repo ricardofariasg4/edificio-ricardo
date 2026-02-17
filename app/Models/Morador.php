@@ -22,4 +22,9 @@ class Morador extends Model
     {
         return $this->belongsTo(Usuario::class, 'id_usuario');
     }
+
+    public function boletos()
+    {
+        return $this->hasMany(Boleto::class, 'id_morador');
+    }
 }
