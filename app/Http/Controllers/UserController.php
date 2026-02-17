@@ -7,6 +7,10 @@ use App\Services\UserService;
 use App\Helpers\HowToValidate;
 use \Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Helpers\CpfExtractor;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -30,16 +34,35 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'nome' => 'required|string|max:100',
-            'email' => 'required|string|email|max:255|unique:USUARIOS,email',
-            'senha' => 'required|string|min:8',
-            'cpf' => 'required|string|max:14|unique:USUARIOS,cpf',
-            'idade' => 'required|integer|min:12',
-            'tipo_usuario' => 'required|string|in:sindico,porteiro,morador,prestador,visitante'
-        ]);
-
-        $this->authorize('register-internal-member', $request->input('tipo_usuario'));
+        $request->merge(['cpf' => CpfExtractor::extractNumbers($request->cpf)]);
+    
+        try {
+            $validatedData = $request->validate([
+                'nome' => 'required|string|max:100',
+                'email' => 'required|string|email|max:255|unique:USUARIOS,email',
+                'senha' => 'required|string|min:8',
+                'cpf' => 'required|string|max:14|unique:USUARIOS,cpf',
+                'idade' => 'required|integer|min:12',
+                'tipo_usuario' => 'required|string|in:sindico,porteiro,morador,prestador,visitante'
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json(
+                [
+                    'erro' => "Não foi possível validar os dados de criação",
+                    'detalhes' => $e->errors()
+                ], 
+                422
+            );
+        }
+        
+        if (Gate::denies('register-internal-member', $request->input('tipo_usuario'))) {
+            return response()->json(
+                [
+                    'message' => 'Você não está autorizado a registrar usuários do tipo ' . $request->input('tipo_usuario')
+                ], 
+                403
+            );
+        }
         
         $user = $this->userService->createNewUser($validatedData);
 
@@ -56,8 +79,27 @@ class UserController extends Controller
             $dataToValidate[$key] = $rule;
         }
 
-        $validatedData = $request->validate($dataToValidate);
-        
+        try {
+            $validatedData = $request->validate($dataToValidate);
+        } catch (ValidationException $e) {
+            return response()->json(
+                [
+                    'erro' => "Não foi possível validar os dados de atualização",
+                    'detalhes' => $e->errors()
+                ], 
+                422
+            );
+        }
+
+        if (Gate::denies('update-internal-member', [$request, Auth::user()])) {
+            return response()->json(
+                [
+                    'message' => 'Você não está autorizado a atualizar usuários do tipo ' . $request->input('tipo_usuario')
+                ], 
+                403
+            );
+        }
+
         return $this->userService->updateUserById($validatedData, $id);
     }
 
