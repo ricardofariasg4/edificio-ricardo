@@ -8,6 +8,7 @@ use \Illuminate\Database\Eloquent\Collection;
 class UserService
 {
     protected UserRepositoryInterface $userRepository;
+    const UNPAID_INVOICE_STATUS = 0;
 
     public function __construct(UserRepositoryInterface $userRepository)
     {
@@ -36,22 +37,24 @@ class UserService
 
     public function deleteUserById(int $id): mixed
     {
-        // Antes de deletar o usuário, verificar se os boletos associados a ele estão pagos
+        // Before deleting the user, verify that the invoices associated with them are paid
         $user = $this->userRepository->find($id);
          
         if (isset($user['error'])) {
-            return $user; // Retorna o erro encontrado ao buscar o usuário
+            return $user; // return the error response if the user is not found
         }
 
         if ($user->tipo_usuario === 'morador') {
-            $morador = $user->morador()->first();
-            $boletosPendentes = $morador->boletos()->where('status_pagamento', 0)->exists();
+            $resident = $user->morador()->first();
+            $outstandingInvoices = $resident->boletos()->where('status_pagamento', self::UNPAID_INVOICE_STATUS)->exists();
             
-            if ($boletosPendentes) {
+            if ($outstandingInvoices) {
                 return [
-                    'error' => 'O morador não pode ser deletado porque possui boletos pendentes.'
+                    'message' => 'O morador não pode ser deletado pois possuí boletos pendentes.'
                 ];
             }
+
+            $resident->boletos()->delete();
         }
         
         return $this->userRepository->delete($id);

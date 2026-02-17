@@ -22,7 +22,7 @@ abstract class BaseRepository implements RepositoryInterface
         } catch (\Exception $e) {
             return [
                 'error' => 'Erro ao recuperar os dados',
-                'details' => $e->getMessage() // Isso deve ser logado ao invés de retornado em produção
+                'details' => $e->getMessage() // This should be logged instead of returned in production
             ];
         }
     }
@@ -34,7 +34,7 @@ abstract class BaseRepository implements RepositoryInterface
         } catch (ModelNotFoundException $e) {
             return [
                 'error' => $this->model->getTable() . ' não encontrado(a)',
-                'details' => $e->getMessage() // Isso deve ser logado ao invés de retornado em produção
+                'details' => $e->getMessage() // This should be logged instead of returned in production
             ];
         }
     }
@@ -46,7 +46,7 @@ abstract class BaseRepository implements RepositoryInterface
         } catch (\Exception $e) {
             return [
                 'error' => 'Erro ao criar o registro na entidade ' . $this->model->getTable(),
-                'details' => $e->getMessage() // Isso deve ser logado ao invés de retornado em produção
+                'details' => $e->getMessage() // This should be logged instead of returned in production
             ];
         }
     }
@@ -60,7 +60,7 @@ abstract class BaseRepository implements RepositoryInterface
         } catch (ModelNotFoundException $e) {
             return [
                 'error' => $this->model->getTable() . ' não encontrado(a) para atualização',
-                'details' => $e->getMessage() // Isso deve ser logado ao invés de retornado em produção
+                'details' => $e->getMessage() // This should be logged instead of returned in production
             ];
         }
     }
@@ -71,20 +71,20 @@ abstract class BaseRepository implements RepositoryInterface
             $entity = $this->model->findOrFail($id);
 
             $response = [
-                'error' => 'Erro ao deletar o registro na entidade ' . $this->model->getTable()
+                'message' => 'Erro ao deletar o registro na entidade ' . $this->model->getTable()
             ];
             
             if ($entity?->delete()) {
                 $response = [
-                    'message' => 'Usuário deletado(a) com sucesso'
+                    'message' => 'Usuário(a) deletado(a) com sucesso'
                 ];
             }
 
             return $response;
         } catch (ModelNotFoundException $e) {
             return [
-                'error' => 'Usuário não encontrado(a) para deleção',
-                'details' => $e->getMessage() // Isso deve ser logado ao invés de retornado em produção
+                'error' => 'Usuário(a) não encontrado(a) para deleção',
+                'details' => $e->getMessage() // This should be logged instead of returned in production
             ];
         }
     }
