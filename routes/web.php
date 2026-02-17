@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Middleware\CanRegister;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
@@ -15,7 +14,7 @@ Route::controller(AuthController::class)->group(function () {
 Route::middleware('auth')->group(function () {
     Route::controller(UserController::class)->group(function () {
         Route::get('/users', 'index');
-        Route::post('/user', 'store')->middleware(CanRegister::class);
+        Route::post('/user', 'store');
         Route::get('/user/{id}', 'show');
         Route::put('/user/{id}', 'update');
         Route::delete('/user/{id}', 'destroy');

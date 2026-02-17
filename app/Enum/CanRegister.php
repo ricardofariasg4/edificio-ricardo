@@ -2,30 +2,17 @@
 
 namespace App\Enum;
 
-enum CanRegister: string
+enum CanRegister: int
 {
-    case ADMIN = 'admin';
-    case SINDICO = 'sindico';
-    case PORTEIRO = 'porteiro';
-    case MORADOR = 'morador';
+    case SINDICO = 0;
+    case PORTEIRO = 1;
+    case MORADOR = 2;
+    case VISITANTE = 3;
+    case PRESTADOR = 3;
+    case PET = 3;
 
-    public function canRegisterInternalMember(string $targetRole): bool
+    public function canRegisterInternalMember(int $targetRole): bool
     {
-        return match ($this) {
-            self::ADMIN => in_array($targetRole, ['*']),
-            self::SINDICO => in_array($targetRole, [
-                'porteiro',
-                'morador',
-                'visitante',
-                'pet',
-                'prestador'
-            ]),
-            self::MORADOR => in_array($targetRole, [
-                'visitante',
-                'pet',
-                'prestador'
-            ]),
-        };
+        return $this->value < $targetRole;
     }
 }
-
