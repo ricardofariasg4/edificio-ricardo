@@ -8,6 +8,7 @@ use App\Repositories\UserRepositoryInterface;
 use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\Gate;
 use App\Enum\CanRegister;
+use App\Enum\PeopleBuilding;
 use App\Repositories\BaseRepository;
 use App\Repositories\RepositoryInterface;
 use Illuminate\Http\Request;
@@ -42,7 +43,21 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Gate::define('view-all-users', function ($user) {
-            return in_array($user->tipo_usuario, ['admin', 'sindico', 'porteiro']);
+            return in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO]);
+        });
+
+        Gate::define('delete-user', function (Usuario $user, int $targetUserId) {
+            if ($user->id_usuario === $targetUserId) {
+                return false;
+            }
+            return in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO]);
+        });
+
+        Gate::define('view-user', function (Usuario $user, int $targetUserId) {
+            if ($user->id_usuario === $targetUserId) {
+                return true;
+            }
+            return in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO]);
         });
     }
 }

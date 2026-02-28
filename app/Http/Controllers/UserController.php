@@ -9,7 +9,9 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Helpers\CpfExtractor;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Auth\Access\AuthorizationException;
+use Symfony\Component\HttpFoundation\Response;
 
 class UserController extends Controller
 {
@@ -23,18 +25,31 @@ class UserController extends Controller
 
     public function index()
     {
-        if (Gate::denies('view-all-users')) {
-            return response()->json([
-                'message' => 'Acesso negado. Apenas administradores, síndicos e porteiros podem visualizar todos os usuários.'
-            ], 403);
+        try {
+            Gate::authorize('view-all-users');
+            $response = response()->json($this->userService->listAllUsers(), Response::HTTP_OK);
+        } catch (AuthorizationException $e) {
+            $response = response()->json([
+                'error' => 'Acesso negado',
+                'details' => 'Você não tem permissão para visualizar todos os usuários.'
+            ], Response::HTTP_FORBIDDEN);
         }
-        
-        return $this->userService->listAllUsers();
+        return $response;
     }
 
-    public function show(int $id): mixed
+    public function show(int $id)
     {
-        return $this->userService->listUserById($id);
+        try {
+            Gate::authorize('view-all-users');
+            Gate::authorize('view-user', $id);
+            $response = response()->json($this->userService->listUserById($id), Response::HTTP_OK);
+        } catch (AuthorizationException $e) {
+            $response = response()->json([
+                'error' => 'Acesso negado',
+                'details' => 'Você não tem permissão para visualizar este usuário.'
+            ], Response::HTTP_FORBIDDEN);
+        }
+        return $response;
     }
 
     public function store(Request $request)
@@ -50,28 +65,30 @@ class UserController extends Controller
                 'idade' => 'required|integer|min:12',
                 'tipo_usuario' => 'required|string|in:sindico,porteiro,morador,prestador,visitante'
             ]);
+            Gate::authorize('register-internal-member', $request->input('tipo_usuario'));
+            $user = $this->userService->createNewUser($validatedData);
+            $response = response()->json([
+                'message' => 'Usuário criado com sucesso',
+                'user' => $user
+            ], Response::HTTP_CREATED);
         } catch (ValidationException $e) {
-            return response()->json(
+            $response = response()->json(
                 [
-                    'erro' => "Não foi possível validar os dados de criação",
-                    'detalhes' => $e->errors()
+                    'error' => "Não foi possível validar os dados de criação",
+                    'details' => $e->errors()
                 ], 
-                422
+                Response::HTTP_UNPROCESSABLE_ENTITY
             );
-        }
-        
-        if (Gate::denies('register-internal-member', $request->input('tipo_usuario'))) {
-            return response()->json(
+        } catch (AuthorizationException $e) {
+            $response = response()->json(
                 [
                     'message' => 'Você não está autorizado a registrar usuários do tipo ' . $request->input('tipo_usuario')
                 ], 
-                403
+                Response::HTTP_FORBIDDEN
             );
         }
-        
-        $user = $this->userService->createNewUser($validatedData);
 
-        return response()->json($user, 201);
+        return $response;
     }
 
     public function update(Request $request, int $id): mixed
@@ -86,30 +103,36 @@ class UserController extends Controller
 
         try {
             $validatedData = $request->validate($dataToValidate);
+            Gate::authorize('update-internal-member', $request);
+            $response = response()->json($this->userService->updateUserById($validatedData, $id), Response::HTTP_OK);
         } catch (ValidationException $e) {
-            return response()->json(
+            $response = response()->json(
                 [
-                    'erro' => "Não foi possível validar os dados de atualização",
-                    'detalhes' => $e->errors()
+                    'error' => "Não foi possível validar os dados de atualização",
+                    'details' => $e->errors()
                 ], 
-                422
+                Response::HTTP_UNPROCESSABLE_ENTITY
+            );
+        } catch (AuthorizationException $e) {
+            $response = response()->json(
+                [
+                    'message' => 'Você não está autorizado a atualizar este usuário.'
+                ], 
+                Response::HTTP_FORBIDDEN
             );
         }
 
-        if (Gate::denies('update-internal-member', [$request, Auth::user()])) {
-            return response()->json(
-                [
-                    'message' => 'Você não está autorizado a atualizar usuários do tipo ' . $request->input('tipo_usuario')
-                ], 
-                403
-            );
-        }
-
-        return $this->userService->updateUserById($validatedData, $id);
+        return $response;
     }
 
-    public function destroy(int $id): mixed
+    public function destroy(int $id): JsonResponse
     {
-        return $this->userService->deleteUserById($id);
+        Gate::authorize('delete-user', $id);
+
+        if ($this->userService->deleteUserById($id)) {
+            return response()->json(['message' => 'Usuário deletado com sucesso.'], Response::HTTP_OK);
+        } else {
+            return response()->json(['message' => 'Não foi possível deletar o usuário.'], Response::HTTP_BAD_REQUEST);
+        }
     }
 }
