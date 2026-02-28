@@ -5,6 +5,7 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use App\Enum\PeopleBuilding;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Usuario>
@@ -31,7 +32,13 @@ class UsuarioFactory extends Factory
             'senha' => Hash::make('password'),
             'cpf' => fake()->unique()->numerify('###########'),
             'idade' => fake()->numberBetween(18, 90),
-            'tipo_usuario' => fake()->randomElement(['sindico', 'porteiro', 'morador', 'visitante', 'prestador']),
+            'tipo_usuario' => fake()->randomElement([
+                PeopleBuilding::SINDICO,
+                PeopleBuilding::PORTEIRO,
+                PeopleBuilding::MORADOR,
+                PeopleBuilding::VISITANTE,
+                PeopleBuilding::PRESTADOR
+            ]),
             'email_verified_at' => now(),
             'remember_token' => Str::random(10)
         ];

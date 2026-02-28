@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enum\PeopleBuilding;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +18,7 @@ class MoradorFactory extends Factory
     public function definition(): array
     {
         return [
-            'id_usuario' => \App\Models\Usuario::factory()->create(['tipo_usuario' => 'morador'])->id_usuario,
+            'id_usuario' => \App\Models\Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::MORADOR])->id_usuario,
             'numero_apto' => $this->faker->numberBetween(1, 800),
         ];
     }
