@@ -11,6 +11,8 @@ use App\Enum\CanRegister;
 use App\Repositories\BaseRepository;
 use App\Repositories\RepositoryInterface;
 use Illuminate\Http\Request;
+use App\Repositories\PetRepository;
+use App\Repositories\PetRepositoryInterface;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(RepositoryInterface::class, BaseRepository::class);
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
+        $this->app->bind(PetRepositoryInterface::class, PetRepository::class);
     }
 
     /**
