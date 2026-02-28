@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\UserService;
 use App\Helpers\HowToValidate;
-use \Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Helpers\CpfExtractor;
 use Illuminate\Support\Facades\Gate;
@@ -22,8 +21,14 @@ class UserController extends Controller
         $this->userService = $userService;
     }
 
-    public function index(): Collection
+    public function index()
     {
+        if (Gate::denies('view-all-users')) {
+            return response()->json([
+                'message' => 'Acesso negado. Apenas administradores, síndicos e porteiros podem visualizar todos os usuários.'
+            ], 403);
+        }
+        
         return $this->userService->listAllUsers();
     }
 

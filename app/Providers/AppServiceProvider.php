@@ -37,5 +37,9 @@ class AppServiceProvider extends ServiceProvider
             $value = $user->id_usuario === (int) $request->route('id');
             return $value;
         });
+
+        Gate::define('view-all-users', function ($user) {
+            return in_array($user->tipo_usuario, ['admin', 'sindico', 'porteiro']);
+        });
     }
 }
