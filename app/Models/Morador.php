@@ -27,4 +27,9 @@ class Morador extends Model
     {
         return $this->hasMany(Boleto::class, 'id_morador');
     }
+
+    public function pets()
+    {
+        return $this->hasMany(Pet::class, 'id_morador');
+    }
 }
