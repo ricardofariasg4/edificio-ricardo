@@ -2,90 +2,68 @@
 
 namespace App\Repositories;
 
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Collection;
+use App\Exceptions\EntityNotFoundException;
+use App\Exceptions\EntityCreateException;
+use App\Exceptions\EntityUpdateException;
+use App\Exceptions\EntityDeleteException;
 
 abstract class BaseRepository implements RepositoryInterface
 {
-    protected Model $model;
+    protected $model;
 
-    public function __construct(Model $model)
+    public function __construct($model)
     {
         $this->model = $model;
     }
 
-    public function all(): Collection | array
+    public function all(): Collection
     {
-        try {
-            return $this->model->all();
-        } catch (\Exception $e) {
-            return [
-                'error' => 'Erro ao recuperar os dados',
-                'details' => $e->getMessage() // This should be logged instead of returned in production
-            ];
-        }
+        return $this->model->all();
     }
 
-    public function find(int $id)
+    public function find(int $id): Model
     {
         try {
             return $this->model->findOrFail($id);
         } catch (ModelNotFoundException $e) {
-            return [
-                'error' => $this->model->getTable() . ' não encontrado(a)',
-                'details' => $e->getMessage() // This should be logged instead of returned in production
-            ];
+            throw new EntityNotFoundException($this->model::class, $e->getMessage());
         }
     }
 
-    public function create(array $data)
+    public function create(array $data): Model
     {
         try {
             return $this->model->create($data);
         } catch (\Exception $e) {
-            return [
-                'error' => 'Erro ao criar o registro na entidade ' . $this->model->getTable(),
-                'details' => $e->getMessage() // This should be logged instead of returned in production
-            ];
+            throw new EntityCreateException($this->model::class, $e->getMessage());
         }
     }
 
-    public function update(int $id, array $data)
+    public function update(int $id, array $data): Model
     {
         try {
             $entity = $this->model->findOrFail($id);
             $entity?->update($data);
             return $entity;
         } catch (ModelNotFoundException $e) {
-            return [
-                'error' => $this->model->getTable() . ' não encontrado(a) para atualização',
-                'details' => $e->getMessage() // This should be logged instead of returned in production
-            ];
+            throw new EntityNotFoundException($this->model::class, $e->getMessage());
+        } catch (\Exception $e) {
+            throw new EntityUpdateException($this->model::class, $e->getMessage());
         }
     }
 
-    public function delete(int $id)
+    public function delete(int $id): bool
     {
         try {
             $entity = $this->model->findOrFail($id);
-
-            $response = [
-                'message' => 'Erro ao deletar o registro na entidade ' . $this->model->getTable()
-            ];
-            
-            if ($entity?->delete()) {
-                $response = [
-                    'message' => 'Usuário(a) deletado(a) com sucesso'
-                ];
-            }
-
-            return $response;
+            return $entity?->delete();
         } catch (ModelNotFoundException $e) {
-            return [
-                'error' => 'Usuário(a) não encontrado(a) para deleção',
-                'details' => $e->getMessage() // This should be logged instead of returned in production
-            ];
+            throw new EntityNotFoundException($this->model::class, $e->getMessage());
+        } catch (\Exception $e) {
+            throw new EntityDeleteException($this->model::class, $e->getMessage());
         }
     }
 }
