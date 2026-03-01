@@ -7,6 +7,7 @@ class HowToValidate
     public static function getRuleByField(string $field): string
     {
         $rules = [
+            // Regras para Usuario
             'nome' => 'required|string|max:100',
             'email' => 'required|string|email|max:255|unique:USUARIOS,email',
             'senha' => 'required|string|min:8',
@@ -16,5 +17,26 @@ class HowToValidate
         ];
 
         return $rules[$field] ?? '';
+    }
+
+    public static function getPetStoreRules(): array
+    {
+        return [
+            'nome' => 'nullable|string|max:100',
+            'peso' => 'nullable|integer|min:0|max:255',
+            'vacinado' => 'required|boolean',
+            'cpf' => 'nullable|string|max:11|unique:PETS,cpf',
+            'id_morador' => 'required|integer|exists:MORADORES,id_usuario',
+        ];
+    }
+
+    public static function getPetUpdateRules(int $petId): array
+    {
+        return [
+            'nome' => 'nullable|string|max:100',
+            'peso' => 'nullable|integer|min:0|max:255',
+            'vacinado' => 'boolean',
+            'cpf' => 'nullable|string|max:11|unique:PETS,cpf,' . $petId . ',id_pet',
+        ];
     }
 }

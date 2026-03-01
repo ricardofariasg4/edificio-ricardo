@@ -59,5 +59,53 @@ class AppServiceProvider extends ServiceProvider
             }
             return in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO]);
         });
+
+        Gate::define('view-all-pets', function (Usuario $user) {
+            return in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO]);
+        });
+
+        Gate::define('view-pet', function (Usuario $user, $pet) {
+            if (in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO])) {
+                return true;
+            }
+            
+            if ($user->tipo_usuario === PeopleBuilding::MORADOR) {
+                return $user->id_usuario === $pet->id_morador;
+            }
+            return false;
+        });
+
+        Gate::define('register-pet', function (Usuario $user, int $idMorador) {
+            if (in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO])) {
+                return true;
+            }
+            
+            if ($user->tipo_usuario === PeopleBuilding::MORADOR) {
+                return $user->id_usuario === $idMorador;
+            }
+            return false;
+        });
+
+        Gate::define('update-pet', function (Usuario $user, $pet) {
+            if (in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO])) {
+                return true;
+            }
+            
+            if ($user->tipo_usuario === PeopleBuilding::MORADOR) {
+                return $user->id_usuario === $pet->id_morador;
+            }
+            return false;
+        });
+
+        Gate::define('delete-pet', function (Usuario $user, $pet) {
+            if (in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO])) {
+                return true;
+            }
+            
+            if ($user->tipo_usuario === PeopleBuilding::MORADOR) {
+                return $user->id_usuario === $pet->id_morador;
+            }
+            return false;
+        });
     }
 }

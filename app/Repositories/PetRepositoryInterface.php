@@ -4,5 +4,11 @@ namespace App\Repositories;
 
 interface PetRepositoryInterface extends RepositoryInterface
 {
-    // Define any additional methods specific to PetRepository if needed
+    /**
+     * Busca todos os pets de um morador específico.
+     *
+     * @param int $idMorador
+     * @return array
+     */
+    public function findByMorador(int $idMorador): array;
 }

@@ -10,4 +10,9 @@ class PetRepository extends BaseRepository implements PetRepositoryInterface
     {
         parent::__construct($model);
     }
+
+    public function findByMorador(int $idMorador): array
+    {
+        return $this->model->where('id_morador', $idMorador)->get()->all();
+    }
 }
