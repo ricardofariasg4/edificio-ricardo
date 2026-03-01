@@ -7,7 +7,6 @@ class HowToValidate
     public static function getRuleByField(string $field): string
     {
         $rules = [
-            // Regras para Usuario
             'nome' => 'required|string|max:100',
             'email' => 'required|string|email|max:255|unique:USUARIOS,email',
             'senha' => 'required|string|min:8',
@@ -37,6 +36,26 @@ class HowToValidate
             'peso' => 'nullable|integer|min:0|max:255',
             'vacinado' => 'boolean',
             'cpf' => 'nullable|string|max:11|unique:PETS,cpf,' . $petId . ',id_pet',
+        ];
+    }
+
+    public static function getInvoiceStoreRules(): array
+    {
+        return [
+            'id_morador' => 'required|integer|exists:MORADORES,id_usuario',
+            'status_pagamento' => 'required|integer|in:0,1',
+            'vencimento' => 'required|date',
+            'valor' => 'required|numeric|min:0',
+        ];
+    }
+
+    public static function getInvoiceUpdateRules(): array
+    {
+        return [
+            'id_morador' => 'nullable|integer|exists:MORADORES,id_usuario',
+            'status_pagamento' => 'nullable|integer|in:0,1',
+            'vencimento' => 'nullable|date',
+            'valor' => 'nullable|numeric|min:0',
         ];
     }
 }

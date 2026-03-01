@@ -17,7 +17,9 @@ class Boleto extends Model
     protected $fillable = [
         'status_pagamento',
         'vencimento',
-        'valor'
+        'valor',
+        'id_morador',
+        'id_notificador',
     ];
 
     public function foiNotificadoPor(): BelongsTo

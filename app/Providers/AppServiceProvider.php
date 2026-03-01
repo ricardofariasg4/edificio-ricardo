@@ -14,6 +14,8 @@ use App\Repositories\RepositoryInterface;
 use Illuminate\Http\Request;
 use App\Repositories\PetRepository;
 use App\Repositories\PetRepositoryInterface;
+use App\Repositories\InvoiceRepository;
+use App\Repositories\InvoiceRepositoryInterface;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(RepositoryInterface::class, BaseRepository::class);
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
         $this->app->bind(PetRepositoryInterface::class, PetRepository::class);
+        $this->app->bind(InvoiceRepositoryInterface::class, InvoiceRepository::class);
     }
 
     /**
@@ -32,6 +35,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Gates para User
         Gate::define('register-internal-member', function (Usuario $user, string $targetRole) {
             $userRole = CanRegister::from($user->tipo_usuario);
             return $userRole?->canRegisterInternalMember($targetRole);
@@ -60,6 +64,7 @@ class AppServiceProvider extends ServiceProvider
             return in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO]);
         });
 
+        // Gates para Pet
         Gate::define('view-all-pets', function (Usuario $user) {
             return in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO]);
         });
@@ -106,6 +111,34 @@ class AppServiceProvider extends ServiceProvider
                 return $user->id_usuario === $pet->id_morador;
             }
             return false;
+        });
+
+        // Gates para Invoice
+        Gate::define('view-all-invoices', function (Usuario $user) {
+            return in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO]);
+        });
+        
+        Gate::define('view-invoice', function (Usuario $user, $invoice) {
+            if (in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO])) {
+                return true;
+            }
+            // Morador pode ver apenas seus próprios boletos
+            if ($user->tipo_usuario === PeopleBuilding::MORADOR) {
+                return $user->id_usuario === $invoice->id_morador;
+            }
+            return false;
+        });
+        
+        Gate::define('register-invoice', function (Usuario $user) {
+            return in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO]);
+        });
+        
+        Gate::define('update-invoice', function (Usuario $user) {
+            return in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO]);
+        });
+        
+        Gate::define('delete-invoice', function (Usuario $user) {
+            return in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO]);
         });
     }
 }

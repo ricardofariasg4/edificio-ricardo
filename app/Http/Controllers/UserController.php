@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\UserService;
 use App\Helpers\HowToValidate;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Helpers\CpfExtractor;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -15,7 +14,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 class UserController extends Controller
 {
-    use AuthorizesRequests;
     protected $userService;
     
     public function __construct(UserService $userService)
