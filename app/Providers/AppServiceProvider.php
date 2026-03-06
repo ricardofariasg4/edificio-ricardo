@@ -16,6 +16,10 @@ use App\Repositories\PetRepository;
 use App\Repositories\PetRepositoryInterface;
 use App\Repositories\InvoiceRepository;
 use App\Repositories\InvoiceRepositoryInterface;
+use App\Repositories\PackageRepository;
+use App\Repositories\PackageRepositoryInterface;
+use App\Repositories\MoveRepository;
+use App\Repositories\MoveRepositoryInterface;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,6 +32,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
         $this->app->bind(PetRepositoryInterface::class, PetRepository::class);
         $this->app->bind(InvoiceRepositoryInterface::class, InvoiceRepository::class);
+        $this->app->bind(PackageRepositoryInterface::class, PackageRepository::class);
+        $this->app->bind(MoveRepositoryInterface::class, MoveRepository::class);
     }
 
     /**
@@ -138,6 +144,47 @@ class AppServiceProvider extends ServiceProvider
         });
         
         Gate::define('delete-invoice', function (Usuario $user) {
+            return in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO]);
+        });
+
+        // Gates para Package (Encomendas)
+        Gate::define('view-all-packages', function (Usuario $user) {
+            return in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO]);
+        });
+
+        Gate::define('view-package', function (Usuario $user, $package) {
+            if (in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO])) {
+                return true;
+            }
+            return $user->id_usuario === $package->id_usuario;
+        });
+
+        Gate::define('register-package', function (Usuario $user) {
+            return in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO]);
+        });
+
+        // Gates para Move (Mudanças)
+        Gate::define('view-all-moves', function (Usuario $user) {
+            return in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO]);
+        });
+
+        Gate::define('view-move', function (Usuario $user, $move) {
+            if (in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO])) {
+                return true;
+            }
+            return $user->id_usuario === $move->id_morador;
+        });
+
+        Gate::define('register-move', function (Usuario $user, int $idMorador) {
+            if (in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO])) {
+                return true;
+            }
+            // Morador só pode agendar sua própria mudança
+            return $user->id_usuario === $idMorador;
+        });
+
+        Gate::define('approve-move', function (Usuario $user) {
+            // Síndico e Admin aprovam definitivamente, Porteiro aprova provisoriamente
             return in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO]);
         });
     }
