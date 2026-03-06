@@ -16,18 +16,17 @@ class Mudanca extends Model
 
     protected $fillable = [
         'data',
-        'status',
         'id_morador',
         'id_autorizador'
     ];
 
-    // public function foiAutorizadaPor(): BelongsTo
-    // {
-    //     return $this->belongsTo(Usuario::class, 'id_autorizador');
-    // }
+    public function foiAutorizadaPor(): BelongsTo
+    {
+        return $this->belongsTo(Usuario::class, 'id_autorizador');
+    }
 
-    // public function pertenceAoMorador()
-    // {
-    //     return $this->belongsTo(Morador::class, 'id_morador');
-    // }
+    public function pertenceAoMorador()
+    {
+        return $this->belongsTo(Morador::class, 'id_morador');
+    }
 }

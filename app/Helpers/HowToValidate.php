@@ -58,4 +58,44 @@ class HowToValidate
             'valor' => 'nullable|numeric|min:0',
         ];
     }
+
+    public static function getPackageStoreRules(): array
+    {
+        return [
+            'codigo_rastreio' => 'required|string|max:45|unique:ENCOMENDAS,codigo_rastreio',
+            'data_recebimento' => 'required|date',
+            'id_usuario' => 'required|integer|exists:USUARIOS,id_usuario',
+        ];
+    }
+
+    public static function getPackageUpdateRules(): array
+    {
+        return [
+            'codigo_rastreio' => 'nullable|string|max:45|unique:ENCOMENDAS,codigo_rastreio',
+            'data_recebimento' => 'nullable|date',
+            'id_usuario' => 'nullable|integer|exists:USUARIOS,id_usuario',
+        ];
+    }
+
+    public static function getMoveStoreRules(): array
+    {
+        return [
+            'data' => 'required|date|after:today',
+            'id_morador' => 'required|integer|exists:MORADORES,id_usuario',
+        ];
+    }
+
+    public static function getMoveUpdateRules(): array
+    {
+        return [
+            'data' => 'nullable|date|after:today',
+        ];
+    }
+
+    public static function getMoveDecisionRules(): array
+    {
+        return [
+            'decision' => 'required|in:aprovado,recusado',
+        ];
+    }
 }
