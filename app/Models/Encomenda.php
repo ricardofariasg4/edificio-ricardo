@@ -16,7 +16,8 @@ class Encomenda extends Model
 
     protected $fillable = [
         'codigo_rastreio',
-        'data_recebimento'
+        'data_recebimento',
+        'id_usuario',
     ];
 
     public function usuario(): BelongsTo
