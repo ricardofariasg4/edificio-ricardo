@@ -10,9 +10,6 @@ use App\Http\Controllers\MoveController;
 use App\Http\Controllers\PetController;
 use Illuminate\Container\Attributes\Auth;
 
-// Rota sem proteção apenas para criar usuários.
-Route::post('/register', [AuthController::class, 'register']);
-
 // Authentication routes
 Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login');
