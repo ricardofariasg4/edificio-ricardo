@@ -17,7 +17,9 @@ class Mudanca extends Model
     protected $fillable = [
         'data',
         'id_morador',
-        'id_autorizador'
+        'id_autorizador',
+        'status',
+        'observacao'
     ];
 
     public function foiAutorizadaPor(): BelongsTo
@@ -25,7 +27,7 @@ class Mudanca extends Model
         return $this->belongsTo(Usuario::class, 'id_autorizador');
     }
 
-    public function pertenceAoMorador()
+    public function pertenceAoMorador(): BelongsTo
     {
         return $this->belongsTo(Morador::class, 'id_morador');
     }
