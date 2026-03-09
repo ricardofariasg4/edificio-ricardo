@@ -13,7 +13,7 @@ use Illuminate\Container\Attributes\Auth;
 // Authentication routes
 Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login');
-    // Route::post('/register', 'register')->middleware('auth', EnsureRegistrationByAuthorized::class);
+    Route::post('/register', 'register')->middleware('auth', EnsureRegistrationByAuthorized::class);
     Route::get('/logout', 'logout')->middleware('auth');
 });
 
