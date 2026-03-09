@@ -8,11 +8,15 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\MoveController;
 use App\Http\Controllers\PetController;
+use Illuminate\Container\Attributes\Auth;
+
+// Rota sem proteção apenas para criar usuários.
+Route::post('/register', [AuthController::class, 'register']);
 
 // Authentication routes
 Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login');
-    Route::post('/register', 'register')->middleware('auth', EnsureRegistrationByAuthorized::class);
+    // Route::post('/register', 'register')->middleware('auth', EnsureRegistrationByAuthorized::class);
     Route::get('/logout', 'logout')->middleware('auth');
 });
 
