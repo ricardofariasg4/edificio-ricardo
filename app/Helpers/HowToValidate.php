@@ -80,7 +80,7 @@ class HowToValidate
     public static function getMoveStoreRules(): array
     {
         return [
-            'data' => 'required|date|after:today',
+            'data' => 'required|date_format:Y-m-d H:i:s|after:today',
             'id_morador' => 'required|integer|exists:MORADORES,id_usuario',
         ];
     }
@@ -88,7 +88,7 @@ class HowToValidate
     public static function getMoveUpdateRules(): array
     {
         return [
-            'data' => 'nullable|date|after:today',
+            'data' => 'nullable|date_format:Y-m-d H:i:s|after:today',
         ];
     }
 

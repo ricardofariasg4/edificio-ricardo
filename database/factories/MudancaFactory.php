@@ -26,6 +26,7 @@ class MudancaFactory extends Factory
         return [
             'data' => $this->faker->date(),
             'status' => $this->faker->randomElement(['pendente', 'aprovado', 'em_andamento', 'finalizado']),
+            'observacao' => $this->faker->sentence(),
             'id_morador' => \App\Models\Morador::inRandomOrder()->value('id_usuario'),
             'id_autorizador' => $autorizador,
         ];
