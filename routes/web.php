@@ -8,7 +8,6 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\MoveController;
 use App\Http\Controllers\PetController;
-use Illuminate\Container\Attributes\Auth;
 
 // Authentication routes
 Route::controller(AuthController::class)->group(function () {
