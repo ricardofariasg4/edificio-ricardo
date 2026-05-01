@@ -13,6 +13,7 @@ services:
     volumes:
       - .:/var/www/html
       - ./docker/xdebug.ini:/usr/local/etc/php/conf.d/99-xdebug.ini
+      - ${HOME}/.ssh:/home/appuser/.ssh:ro
     depends_on:
       db:
         condition: service_healthy
