@@ -89,3 +89,19 @@ com `status = 'pendente'`.
 `501 Not Implemented`, com a mensagem indicando que o fluxo de decisão deve ser usado.
 Isso é intencional: uma mudança não deve ser editada/apagada diretamente, apenas
 avançar pelo fluxo pendente → decisão.
+
+### Decisão automática por ausência de aprovação (`autoDecidePendingMoves`) — issue #5
+
+Cobre o caso do síndico não decidir a tempo. Executado pelo comando
+`php artisan moves:auto-decide` (agendado de hora em hora via `Schedule::command`
+em `routes/console.php` — depende de um cron rodando `schedule:run` no ambiente,
+o que ainda não está configurado no `docker-compose.yml`), avalia toda mudança com
+`data` a 24h ou menos do acontecimento que ainda esteja `pendente` ou `em_andamento`:
+
+| Status antes | Condição | Status depois |
+|---|---|---|
+| `em_andamento` (aprovação provisória do porteiro) | sem ratificação do síndico até 24h antes | `aprovado` (ratificação automática) |
+| `pendente` (nenhuma aprovação) | sem nenhuma decisão até 24h antes | `recusado`, com `observacao = 'Ausência de aprovação'` |
+
+Mudanças já `aprovado`/`recusado`, ou com `data` a mais de 24h de distância, não são
+tocadas.
