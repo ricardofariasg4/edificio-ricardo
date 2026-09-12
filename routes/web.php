@@ -59,6 +59,7 @@ Route::middleware('auth')->group(function () {
     // and building managers can register, update, or delete a move.
     Route::controller(MoveController::class)->group(function () {
         Route::get('/moves', 'index');
+        Route::get('/moves/rejected', 'listRejectedMoves');
         Route::get('/move/{id}', 'show');
         Route::post('/move', 'store');
         Route::put('/move/{id}', 'update');

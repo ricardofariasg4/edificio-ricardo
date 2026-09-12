@@ -20,4 +20,25 @@ class MoveRepository extends BaseRepository implements MoveRepositoryInterface
     {
         return $this->model->where('status', 'pendente')->get()->all();
     }
+
+    public function findRejected(): array
+    {
+        return $this->model
+            ->where('status', 'recusado')
+            ->whereNotNull('observacao')
+            ->whereRaw("TRIM(observacao) <> ''")
+            ->get()
+            ->all();
+    }
+
+    public function findRejectedByMorador(int $idMorador): array
+    {
+        return $this->model
+            ->where('id_morador', $idMorador)
+            ->where('status', 'recusado')
+            ->whereNotNull('observacao')
+            ->whereRaw("TRIM(observacao) <> ''")
+            ->get()
+            ->all();
+    }
 }

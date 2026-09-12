@@ -96,6 +96,7 @@ class HowToValidate
     {
         return [
             'decision' => 'required|in:aprovado,recusado',
+            'observacao' => 'nullable|string|max:500|required_if:decision,recusado',
         ];
     }
 }

@@ -36,6 +36,16 @@ class MoveService
         return $this->moveRepository->findPending();
     }
 
+    public function getRejectedMoves(): array
+    {
+        return $this->moveRepository->findRejected();
+    }
+
+    public function getRejectedMovesByMorador(int $idMorador): array
+    {
+        return $this->moveRepository->findRejectedByMorador($idMorador);
+    }
+
     public function createMove(array $data): array
     {
         // Define status inicial como pendente (RF07)
@@ -53,10 +63,11 @@ class MoveService
         return $this->moveRepository->delete($id);
     }
 
-    public function makeDecision(int $id, string $decision, Usuario $autorizador): array
+    public function makeDecision(int $id, string $decision, Usuario $autorizador, ?string $observacao = null): array
     {
         $move = $this->moveRepository->find($id);
         $newStatus = $move->status;
+        $normalizedObservation = $observacao !== null ? trim($observacao) : null;
 
         if ($decision === 'aprovado') {
             if ($autorizador->tipo_usuario === PeopleBuilding::SINDICO || $autorizador->tipo_usuario === PeopleBuilding::ADMIN) {
@@ -72,7 +83,8 @@ class MoveService
 
         $data = [
             'status' => $newStatus,
-            'id_autorizador' => $autorizador->id_usuario
+            'id_autorizador' => $autorizador->id_usuario,
+            'observacao' => $decision === 'recusado' ? $normalizedObservation : null,
         ];
 
         return $this->moveRepository->update($id, $data)->getAttributes();
