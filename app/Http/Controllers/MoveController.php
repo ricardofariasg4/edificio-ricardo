@@ -106,14 +106,45 @@ class MoveController extends Controller
         }
     }
 
+    public function listRejectedMoves(): JsonResponse
+    {
+        try {
+            if (Gate::allows('view-all-moves')) {
+                $rejectedMoves = $this->moveService->getRejectedMoves();
+            } else {
+                $user = Auth::user();
+                $rejectedMoves = $this->moveService->getRejectedMovesByMorador($user->id_usuario);
+            }
+
+            return response()->json($rejectedMoves, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Erro ao listar mudanças recusadas',
+                'details' => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
     public function makeDecision(Request $request, int $id): JsonResponse
     {
         try {
             Gate::authorize('approve-move');
             
             $validatedData = $request->validate(HowToValidate::getMoveDecisionRules());
+
+            $observacao = $validatedData['observacao'] ?? null;
+            if ($validatedData['decision'] === 'recusado' && trim((string) $observacao) === '') {
+                throw ValidationException::withMessages([
+                    'observacao' => ['O campo observacao é obrigatório quando a decisão for recusado.']
+                ]);
+            }
             
-            $updatedMove = $this->moveService->makeDecision($id, $validatedData['decision'], Auth::user());
+            $updatedMove = $this->moveService->makeDecision(
+                $id,
+                $validatedData['decision'],
+                Auth::user(),
+                $observacao
+            );
 
             return response()->json([
                 'message' => 'Decisão registrada com sucesso',
