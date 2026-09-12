@@ -79,7 +79,7 @@ class AppServiceProvider extends ServiceProvider
             if (in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO])) {
                 return true;
             }
-            
+
             if ($user->tipo_usuario === PeopleBuilding::MORADOR) {
                 return $user->id_usuario === $pet->id_morador;
             }
@@ -90,7 +90,7 @@ class AppServiceProvider extends ServiceProvider
             if (in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO])) {
                 return true;
             }
-            
+
             if ($user->tipo_usuario === PeopleBuilding::MORADOR) {
                 return $user->id_usuario === $idMorador;
             }
@@ -101,7 +101,7 @@ class AppServiceProvider extends ServiceProvider
             if (in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO])) {
                 return true;
             }
-            
+
             if ($user->tipo_usuario === PeopleBuilding::MORADOR) {
                 return $user->id_usuario === $pet->id_morador;
             }
@@ -112,7 +112,7 @@ class AppServiceProvider extends ServiceProvider
             if (in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO])) {
                 return true;
             }
-            
+
             if ($user->tipo_usuario === PeopleBuilding::MORADOR) {
                 return $user->id_usuario === $pet->id_morador;
             }

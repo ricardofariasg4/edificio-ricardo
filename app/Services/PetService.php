@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Repositories\PetRepositoryInterface;
 use App\Exceptions\EntityCreateException;
+use App\Exceptions\EntityUpdateException;
 use App\Models\Pet;
 
 class PetService
@@ -44,7 +45,7 @@ class PetService
     {
         // If trying to update 'vacinado' to false, do not allow it
         if (isset($data['vacinado']) && $data['vacinado'] === false) {
-            throw new EntityCreateException('Pet', 'Não é permitido remover o status de vacinação do pet.');
+            throw new EntityUpdateException('Pet', 'Não é permitido remover o status de vacinação do pet.');
         }
 
         return $this->petRepository->update($id, $data)->getAttributes();

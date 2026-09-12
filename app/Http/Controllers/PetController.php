@@ -13,6 +13,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Symfony\Component\HttpFoundation\Response;
 use App\Exceptions\EntityNotFoundException;
 use App\Exceptions\EntityCreateException;
+use App\Exceptions\EntityUpdateException;
 
 class PetController extends Controller
 {
@@ -120,6 +121,11 @@ class PetController extends Controller
                 'error' => 'Pet não encontrado',
                 'details' => $e->getMessage()
             ], Response::HTTP_NOT_FOUND);
+        } catch (EntityUpdateException $e) {
+            return response()->json([
+                'error' => 'Erro ao atualizar pet',
+                'details' => $e->getMessage()
+            ], Response::HTTP_BAD_REQUEST);
         }
     }
 

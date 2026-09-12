@@ -18,7 +18,7 @@ class PetFactory extends Factory
     {
         return [
             'nome' => $this->faker->firstName(),
-            'peso' => $this->faker->randomFloat(2, 1, 50),
+            'peso' => $this->faker->numberBetween(1, 50),
             'vacinado' => $this->faker->boolean(),
             'cpf' => $this->faker->unique()->numerify('###########'),
             'id_morador' => \App\Models\Morador::inRandomOrder()->value('id_usuario'),

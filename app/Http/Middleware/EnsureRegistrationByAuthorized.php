@@ -19,7 +19,7 @@ class EnsureRegistrationByAuthorized
     {
         $user = Auth::user();
         
-        if (!AuthorizedEmployees::tryFrom($user->tipo_usuario)) {
+        if (!AuthorizedEmployees::tryFrom($user->tipo_usuario->value)) {
             return response()->json([
                 'message' => 'Acesso negado. Operação reservada para usuários autorizados.'
             ], 403);
