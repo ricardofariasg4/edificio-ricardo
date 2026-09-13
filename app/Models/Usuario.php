@@ -88,7 +88,7 @@ class Usuario extends Authenticatable
 
     public function encomenda()
     {
-        return $this->hasMany(Encomenda::class, 'id_entregador');
+        return $this->hasMany(Encomenda::class, 'id_usuario');
     }
 
     // public function mudancasAutorizadas()

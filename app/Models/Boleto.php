@@ -24,7 +24,7 @@ class Boleto extends Model
 
     public function foiNotificadoPor(): BelongsTo
     {
-        return $this->belongsTo(Usuario::class, 'id_usuario');
+        return $this->belongsTo(Usuario::class, 'id_notificador');
     }
 
     public function pertenceAoMorador(): BelongsTo
