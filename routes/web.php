@@ -8,6 +8,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\MoveController;
 use App\Http\Controllers\PetController;
+use App\Http\Controllers\LogController;
 
 // Authentication routes
 Route::controller(AuthController::class)->group(function () {
@@ -79,6 +80,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/pet', 'store');
         Route::put('/pet/{id}', 'update');
         Route::delete('/pet/{id}', 'destroy');
+    });
+
+    // Log management routes (issue #7). Apenas funcionários autorizados podem
+    // consultar os logs críticos registrados localmente pela aplicação.
+    Route::middleware(EnsureRegistrationByAuthorized::class)->group(function () {
+        Route::get('/logs', [LogController::class, 'index']);
     });
 });
 

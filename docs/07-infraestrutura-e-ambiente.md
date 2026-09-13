@@ -54,12 +54,50 @@ notificações em tempo real (RNF03), mas:
 - `AWS_*` no `.env.example` são apenas o boilerplate padrão do Laravel para o driver
   de storage `s3`; não há uso de S3 configurado no código.
 
+## Logging
+
+Issue [#7](https://github.com/ricardofariasg4/edificio-ricardo/issues/7): a aplicação
+não possui (nem precisa, por ora) de um serviço externo de centralização de logs
+(Bugsnag, Graylog etc.), então o registro de erros críticos é feito localmente, em
+formato consultável:
+
+- **Canal `critical`** (`config/logging.php`): usa o driver `single` do Monolog,
+  gravando em `storage/logs/critical.log`, mas com o formatter trocado para
+  `Monolog\Formatter\JsonFormatter` via um "tap" (`app/Logging/JsonLineFormatter.php`)
+  — cada entrada vira uma linha JSON independente, evitando parsing frágil de texto
+  ao ler o arquivo de volta.
+- **`Controller::logCriticalAndRespond()`** (`app/Http/Controllers/Controller.php`):
+  helper usado pelos catches já existentes nos controllers (Move/Pet/Invoice/Package)
+  para registrar o detalhe técnico da exceção (classe, mensagem, arquivo, linha) nesse
+  canal e devolver ao cliente **apenas** a mensagem de negócio já curada (ex.: "Boleto
+  não encontrado"), sem vazar a mensagem crua da exceção — esse era exatamente o
+  problema relatado na issue ("alguns logs críticos são devolvidos para o usuário").
+- **Rede de segurança global** (`bootstrap/app.php`, `withExceptions`): qualquer
+  exceção que escape sem passar por um `try/catch` de controller (ex.:
+  `EntityDeleteException` não capturada em `UserController::destroy`) também é
+  registrada no canal `critical` (`reportable`) e, para requisições JSON, nunca
+  renderiza mensagem/stack trace crus ao cliente — mesmo com `APP_DEBUG=true` — devolvendo
+  uma mensagem genérica (`renderable`). Erros de validação, autorização e exceções
+  HTTP "normais" do Symfony (404 de rota etc.) seguem o comportamento padrão do
+  Laravel, que já não vaza detalhes sensíveis nesses casos.
+- **`GET /logs`** (`LogController` + `LogService`): lê `critical.log`, devolve as
+  entradas mais recentes primeiro, paginadas (`?page=`, `?per_page=`). Restrito a
+  funcionários autenticados via `EnsureRegistrationByAuthorized`, satisfazendo o
+  requisito de autenticação da issue.
+
+Não há rotação/retention automática desse arquivo (driver `single`, não `daily`) —
+suficiente para o volume atual do projeto; considerar rotação diária caso o arquivo
+cresça muito.
+
 ## Testes
 
 - `phpunit.xml` usa SQLite em memória para o ambiente de teste (diferente do MySQL
-  usado em desenvolvimento/produção).
-- Cobertura atual: apenas os testes de exemplo gerados pelo scaffold do Laravel
-  (`tests/Feature/ExampleTest.php` — checa que `GET /` retorna 200 —, e
-  `tests/Unit/ExampleTest.php` — asserção trivial). **Não há testes automatizados**
-  cobrindo Controllers, Services, Repositories, Gates ou o fluxo de mudanças. Ver
-  [Débitos técnicos](08-debitos-tecnicos-e-limitacoes.md#ausência-de-testes-automatizados).
+  usado em desenvolvimento/produção). A imagem `php:8.3-cli` "pura" já traz
+  `pdo_sqlite` habilitado por padrão, mas `docker/Dockerfile` (usado em
+  desenvolvimento) não instala essa extensão explicitamente — rodar os testes dentro
+  do container de desenvolvimento do projeto pode exigir adicioná-la ao Dockerfile.
+- Cobertura atual: `tests/Feature/AuthControllerTest.php`, `PetControllerTest.php`,
+  `MoveAutoDecisionTest.php`, `LogControllerTest.php` e
+  `GlobalExceptionHandlingTest.php`, além dos exemplos padrão do scaffold do Laravel.
+  Ainda não há testes para os fluxos de Boletos (`InvoiceController`) e Encomendas
+  (`PackageController`), nem para os Gates de usuário (`UserController`).

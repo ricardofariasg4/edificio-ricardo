@@ -69,6 +69,17 @@ respostas são sempre JSON. Todas as rotas abaixo, exceto as marcadas como
 | PUT | `/pet/{id}` | `PetController@update` | `update-pet` |
 | DELETE | `/pet/{id}` | `PetController@destroy` | `delete-pet` |
 
+## Logs
+
+| Método | Rota | Controller@action | Middleware extra | Descrição |
+|---|---|---|---|---|
+| GET | `/logs` | `LogController@index` | `EnsureRegistrationByAuthorized` | Lista os logs críticos registrados localmente (issue #7), paginados (`?page=`, `?per_page=`), mais recentes primeiro |
+
+> Endpoint entregue na issue
+> [#7](https://github.com/ricardofariasg4/edificio-ricardo/issues/7). Detalhes do
+> mecanismo de logging em
+> [Infraestrutura e ambiente](07-infraestrutura-e-ambiente.md#logging).
+
 ## Diversos
 
 | Método | Rota | Descrição |

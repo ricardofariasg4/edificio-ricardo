@@ -6,6 +6,15 @@ registrar e explicar, para priorização futura.
 
 ## 1. Comparação quebrada entre `tipo_usuario` (string) e o enum `PeopleBuilding`
 
+> **Corrigido** (issue [#1](https://github.com/ricardofariasg4/edificio-ricardo/issues/1)):
+> `Usuario::casts()` agora inclui `'tipo_usuario' => PeopleBuilding::class`, fazendo o
+> Eloquent devolver instâncias do enum em vez de string crua — os `in_array()` dos
+> Gates voltam a comparar enum-com-enum corretamente. `EnsureRegistrationByAuthorized`
+> foi ajustado para `AuthorizedEmployees::tryFrom($user->tipo_usuario->value)`. A
+> descrição abaixo é mantida como registro histórico do problema e da análise, já
+> coberta por testes (`PetControllerTest`, `AuthControllerTest`) que exercitam
+> síndico/porteiro através dos Gates afetados.
+
 **Prioridade sugerida: alta — afeta autorização em praticamente toda a API.**
 
 A grande maioria dos Gates em `app/Providers/AppServiceProvider.php` segue este
@@ -46,12 +55,11 @@ var_dump(in_array("admin", [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO])); /
   **ou** dono da mudança) ainda funcionam para o dono do recurso, mas nunca liberam
   acesso a funcionários que não sejam o dono.
 - O mesmo padrão aparece em `UserService::deleteUserById`
-  (`$user->tipo_usuario === PeopleBuilding::MORADOR`, comparação **estrita**, também
-  sempre falsa) — isso significa que a regra "não deletar morador com boleto
-  pendente" (documentada em [Regras de negócio](05-regras-de-negocio.md#usuários-userservice))
-  **não está sendo aplicada** pela camada de serviço; quem acaba barrando a exclusão
-  hoje é só a constraint `ON DELETE RESTRICT` do banco, que gera um erro de SQL não
-  tratado em vez da mensagem de negócio pretendida.
+  (`$user->tipo_usuario === PeopleBuilding::MORADOR`) — com o cast do item acima essa
+  comparação estrita também passou a funcionar corretamente, então a regra "não
+  deletar morador com boleto pendente" (documentada em
+  [Regras de negócio](05-regras-de-negocio.md#usuários-userservice)) já é aplicada
+  pela camada de serviço (coberta por `GlobalExceptionHandlingTest`).
 
 **Caminho de correção (não aplicado aqui):** trocar `in_array($user->tipo_usuario,
 [PeopleBuilding::X, ...])` por comparação de valores escalares, por exemplo
@@ -108,22 +116,26 @@ moradores).
   `UserController::store`, que exige o campo — usuários criados pela rota de
   autenticação nascem sem papel definido.
 
-## 5. Ausência de testes automatizados
+## 5. Cobertura de testes ainda incompleta
 
-`tests/Feature/ExampleTest.php` e `tests/Unit/ExampleTest.php` são apenas o scaffold
-padrão do Laravel (checagem de `GET /` e uma asserção trivial). **Não há nenhum teste**
-cobrindo:
+> **Parcialmente corrigido**: já existem testes de Feature para autenticação/registro
+> (`AuthControllerTest`), Gates e regras de `PetService` (`PetControllerTest`), o
+> fluxo de decisão automática de mudanças (`MoveAutoDecisionTest`), o sistema de
+> logging (`LogControllerTest`) e a rede de segurança de exceções não tratadas
+> (`GlobalExceptionHandlingTest`).
 
-- Os Gates de autorização (o que teria capturado o bug do item 1 antes de chegar em
-  produção).
-- O fluxo de decisão de mudanças (`MoveService::makeDecision` — aprovação definitiva x
-  provisória, obrigatoriedade de observação na recusa).
-- As regras de negócio de `PetService` (vacinação obrigatória e irreversível) e
-  `UserService` (bloqueio de exclusão de morador com boleto pendente).
-- Os endpoints REST em si (validação, códigos de status HTTP retornados).
+Ainda faltam testes cobrindo:
 
-Recomenda-se priorizar testes de Feature para os Gates (item 1) e para o fluxo de
-mudanças, dado que são os pontos com maior risco de regressão silenciosa.
+- `MoveService::makeDecision` (aprovação definitiva x provisória via `POST
+  /move/{id}/decision`) e `MoveController::listRejectedMoves`.
+- Os endpoints de Boletos (`InvoiceController`/`InvoiceService`) e Encomendas
+  (`PackageController`/`PackageService`).
+- Os Gates e fluxos de `UserController` (cadastro/atualização/exclusão de usuários),
+  incluindo o bug do item 2 acima (`register-internal-member`).
+
+Recomenda-se priorizar testes para o fluxo de decisão de mudanças e para
+`register-internal-member`, dado que são os pontos com maior risco de regressão
+silenciosa hoje.
 
 ## 6. Requisitos funcionais do PEX ainda sem implementação
 

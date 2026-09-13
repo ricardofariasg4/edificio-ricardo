@@ -35,10 +35,7 @@ class InvoiceController extends Controller
             }
             return response()->json($invoices, Response::HTTP_OK);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro ao listar boletos',
-                'details' => $e->getMessage()
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->logCriticalAndRespond($e, 'Erro ao listar boletos', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -54,10 +51,7 @@ class InvoiceController extends Controller
                 'details' => 'Você não tem permissão para visualizar este boleto.'
             ], Response::HTTP_FORBIDDEN);
         } catch (EntityNotFoundException $e) {
-            return response()->json([
-                'error' => 'Boleto não encontrado',
-                'details' => $e->getMessage()
-            ], Response::HTTP_NOT_FOUND);
+            return $this->logCriticalAndRespond($e, 'Boleto não encontrado', Response::HTTP_NOT_FOUND);
         }
     }
 
@@ -86,10 +80,7 @@ class InvoiceController extends Controller
                 'details' => 'Você não tem permissão para criar boletos.'
             ], Response::HTTP_FORBIDDEN);
         } catch (EntityCreateException $e) {
-            return response()->json([
-                'error' => 'Erro ao criar boleto',
-                'details' => $e->getMessage()
-            ], Response::HTTP_BAD_REQUEST);
+            return $this->logCriticalAndRespond($e, 'Erro ao criar boleto', Response::HTTP_BAD_REQUEST);
         }
     }
 
@@ -118,10 +109,7 @@ class InvoiceController extends Controller
                 'details' => 'Você não tem permissão para atualizar este boleto.'
             ], Response::HTTP_FORBIDDEN);
         } catch (EntityNotFoundException $e) {
-            return response()->json([
-                'error' => 'Boleto não encontrado',
-                'details' => $e->getMessage()
-            ], Response::HTTP_NOT_FOUND);
+            return $this->logCriticalAndRespond($e, 'Boleto não encontrado', Response::HTTP_NOT_FOUND);
         }
     }
 
@@ -142,10 +130,7 @@ class InvoiceController extends Controller
                 'details' => 'Você não tem permissão para deletar este boleto.'
             ], Response::HTTP_FORBIDDEN);
         } catch (EntityNotFoundException $e) {
-            return response()->json([
-                'error' => 'Boleto não encontrado',
-                'details' => $e->getMessage()
-            ], Response::HTTP_NOT_FOUND);
+            return $this->logCriticalAndRespond($e, 'Boleto não encontrado', Response::HTTP_NOT_FOUND);
         }
     }
 }

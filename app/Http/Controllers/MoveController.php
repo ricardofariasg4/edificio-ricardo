@@ -35,10 +35,7 @@ class MoveController extends Controller
             }
             return response()->json($moves, Response::HTTP_OK);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro ao listar mudanças',
-                'details' => $e->getMessage()
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->logCriticalAndRespond($e, 'Erro ao listar mudanças', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -54,10 +51,7 @@ class MoveController extends Controller
                 'details' => 'Você não tem permissão para visualizar esta mudança.'
             ], Response::HTTP_FORBIDDEN);
         } catch (EntityNotFoundException $e) {
-            return response()->json([
-                'error' => 'Mudança não encontrada',
-                'details' => $e->getMessage()
-            ], Response::HTTP_NOT_FOUND);
+            return $this->logCriticalAndRespond($e, 'Mudança não encontrada', Response::HTTP_NOT_FOUND);
         }
     }
 
@@ -85,10 +79,7 @@ class MoveController extends Controller
                 'details' => 'Você não tem permissão para agendar esta mudança.'
             ], Response::HTTP_FORBIDDEN);
         } catch (EntityCreateException $e) {
-            return response()->json([
-                'error' => 'Erro ao agendar mudança',
-                'details' => $e->getMessage()
-            ], Response::HTTP_BAD_REQUEST);
+            return $this->logCriticalAndRespond($e, 'Erro ao agendar mudança', Response::HTTP_BAD_REQUEST);
         }
     }
 
@@ -118,10 +109,7 @@ class MoveController extends Controller
 
             return response()->json($rejectedMoves, Response::HTTP_OK);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro ao listar mudanças recusadas',
-                'details' => $e->getMessage()
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->logCriticalAndRespond($e, 'Erro ao listar mudanças recusadas', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 

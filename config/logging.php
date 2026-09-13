@@ -123,6 +123,17 @@ return [
             'handler' => NullHandler::class,
         ],
 
+        // Canal dedicado a erros críticos da aplicação (issue #7): grava cada
+        // registro como uma linha JSON, para que possam ser lidos de volta
+        // pelo endpoint GET /logs sem depender de parsing do formato de texto
+        // padrão do Monolog.
+        'critical' => [
+            'driver' => 'single',
+            'tap' => [App\Logging\JsonLineFormatter::class],
+            'path' => storage_path('logs/critical.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+        ],
+
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
         ],

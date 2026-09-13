@@ -35,10 +35,7 @@ class PackageController extends Controller
             }
             return response()->json($packages, Response::HTTP_OK);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro ao listar encomendas',
-                'details' => $e->getMessage()
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->logCriticalAndRespond($e, 'Erro ao listar encomendas', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -54,10 +51,7 @@ class PackageController extends Controller
                 'details' => 'Você não tem permissão para visualizar esta encomenda.'
             ], Response::HTTP_FORBIDDEN);
         } catch (EntityNotFoundException $e) {
-            return response()->json([
-                'error' => 'Encomenda não encontrada',
-                'details' => $e->getMessage()
-            ], Response::HTTP_NOT_FOUND);
+            return $this->logCriticalAndRespond($e, 'Encomenda não encontrada', Response::HTTP_NOT_FOUND);
         }
     }
 
@@ -86,10 +80,7 @@ class PackageController extends Controller
                 'details' => 'Você não tem permissão para registrar encomendas.'
             ], Response::HTTP_FORBIDDEN);
         } catch (EntityCreateException $e) {
-            return response()->json([
-                'error' => 'Erro ao registrar encomenda',
-                'details' => $e->getMessage()
-            ], Response::HTTP_BAD_REQUEST);
+            return $this->logCriticalAndRespond($e, 'Erro ao registrar encomenda', Response::HTTP_BAD_REQUEST);
         }
     }
 
@@ -119,10 +110,7 @@ class PackageController extends Controller
                 'details' => 'Você não tem permissão para atualizar esta encomenda.'
             ], Response::HTTP_FORBIDDEN);
         } catch (EntityNotFoundException $e) {
-            return response()->json([
-                'error' => 'Encomenda não encontrada',
-                'details' => $e->getMessage()
-            ], Response::HTTP_NOT_FOUND);
+            return $this->logCriticalAndRespond($e, 'Encomenda não encontrada', Response::HTTP_NOT_FOUND);
         }
     }
 
@@ -144,10 +132,7 @@ class PackageController extends Controller
                 'details' => 'Você não tem permissão para deletar esta encomenda.'
             ], Response::HTTP_FORBIDDEN);
         } catch (EntityNotFoundException $e) {
-            return response()->json([
-                'error' => 'Encomenda não encontrada',
-                'details' => $e->getMessage()
-            ], Response::HTTP_NOT_FOUND);
+            return $this->logCriticalAndRespond($e, 'Encomenda não encontrada', Response::HTTP_NOT_FOUND);
         }
     }
 }

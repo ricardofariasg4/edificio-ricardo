@@ -9,10 +9,6 @@ Regras aplicadas na camada `Services`, após validação e autorização do Cont
   `UserService::UNPAID_INVOICE_STATUS`); se houver, lança `EntityDeleteException` e
   impede a exclusão. Caso não haja pendência, os boletos do morador são apagados antes
   do próprio usuário.
-  > Esta checagem usa `$user->tipo_usuario === PeopleBuilding::MORADOR`, comparação
-  > estrita entre string e enum que **nunca é verdadeira** em PHP 8.1+ — na prática,
-  > a regra de bloqueio por inadimplência não está sendo aplicada hoje. Ver
-  > [Débitos técnicos](08-debitos-tecnicos-e-limitacoes.md).
 - No nível de banco, a FK `BOLETOS.id_morador → MORADORES.id_usuario` é `ON DELETE
   RESTRICT`, então mesmo com o bug acima o banco impede a exclusão física de um
   morador com boletos vinculados (a diferença é que o erro chega como exceção de SQL
