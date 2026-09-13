@@ -74,68 +74,64 @@ internamente).
 
 ## 2. `Gate::define('register-internal-member', ...)` provavelmente lança erro em runtime
 
-```php
-Gate::define('register-internal-member', function (Usuario $user, string $targetRole) {
-    $userRole = CanRegister::from($user->tipo_usuario);
-    return $userRole?->canRegisterInternalMember($targetRole);
-});
-```
+> **Corrigido** (issue [#2](https://github.com/ricardofariasg4/edificio-ricardo/issues/2)):
+> Adicionados métodos `fromPeopleBuilding()` e `fromString()` ao enum `CanRegister`
+> para mapear corretamente entre `PeopleBuilding` (string-backed) e `CanRegister`
+> (int-backed). Também adicionado `ADMIN = -1` a `CanRegister` para permitir que
+> admin registre qualquer tipo de usuário. Testes adicionados em `AuthControllerTest`
+> cobrem todos os níveis de permissão (sindico registra porteiro/morador, porteiro
+> não registra sindico, morador registra visitante, visitante não registra ninguém).
 
-`CanRegister` é um enum *backed* por `int` (`SINDICO=0, PORTEIRO=1, MORADOR=2,
-VISITANTE=PRESTADOR=PET=3`), mas `$user->tipo_usuario` é uma `string` (ex.:
-`"sindico"`). `CanRegister::from()` espera um valor `int` compatível com o backing
-type do enum; passar uma string tende a resultar em erro de tipo em tempo de
-execução (`TypeError` ou `ValueError`, dependendo da versão do PHP), quebrando o
-cadastro de novos usuários via `UserController::store` (RF01/RF07 de cadastro de
-moradores).
+**Problema original (já resolvido):** `CanRegister` era um enum *backed* por `int`
+(`SINDICO=0, PORTEIRO=1, MORADOR=2, VISITANTE=PRESTADOR=PET=3`), mas `$user->tipo_usuario`
+era uma `string` ou instância de `PeopleBuilding`. `CanRegister::from()` esperava um `int`,
+causando erro de tipo em runtime que quebraria o cadastro de novos usuários.
 
 ## 3. Relacionamentos com chave estrangeira incorreta em `app/Models/`
 
-- `Usuario::encomenda()` usa `hasMany(Encomenda::class, 'id_entregador')`, mas a
-  tabela `ENCOMENDAS` só tem a coluna `id_usuario` (não existe `id_entregador`) —
-  qualquer chamada a esse relacionamento falha com erro de coluna inexistente no SQL.
-- `Boleto::foiNotificadoPor()` usa `belongsTo(Usuario::class, 'id_usuario')`, quando a
-  coluna correta de FK para o notificador é `id_notificador` (a própria migration de
-  criação de `BOLETOS` usa esse nome). Hoje esse relacionamento retorna sempre o
-  próprio morador/dono ao invés do usuário que notificou o boleto.
+> **Corrigido** (issue [#3](https://github.com/ricardofariasg4/edificio-ricardo/issues/3)):
+> - `Usuario::encomenda()` agora usa `hasMany(Encomenda::class, 'id_usuario')`
+> - `Boleto::foiNotificadoPor()` agora usa `belongsTo(Usuario::class, 'id_notificador')`
+> Testes adicionados em `RelationshipsTest` validam que os relacionamentos retornam
+> os registros corretos.
+
+**Problema original (já resolvido):**
+- `Usuario::encomenda()` usava `'id_entregador'` (coluna inexistente), causando erro SQL
+- `Boleto::foiNotificadoPor()` usava `'id_usuario'` (retornava morador em vez de notificador)
 
 ## 4. Código morto / incompleto
 
-- **`app/Policies/UserPolicy.php`** — duplica a lógica do Gate `register-internal-member`,
-  mas não está registrada em nenhum `ServiceProvider` (`Gate::policy()`) nem
-  referenciada por nenhum controller. Sugestão: remover, ou migrar o Gate para usar a
-  Policy (escolher uma única fonte de verdade).
-- **`app/Http/Middleware/CanRegister.php`** — middleware *no-op*, não anexado a
-  nenhuma rota.
-- **`app/Strategy/CadastroStrategy/CadastroStrategy.php`** — interface
-  `CadastroUsuarioStrategy` sem nenhuma implementação concreta nem uso em outro
-  arquivo do projeto.
-- **`App\Enum\BuildingLocations`** — enum definido (`garagem, vaga, portaria,
-  terraco`), mas não referenciado em nenhum outro lugar da aplicação.
-- **`AuthController::register`** não define `tipo_usuario` no cadastro, diferente de
-  `UserController::store`, que exige o campo — usuários criados pela rota de
-  autenticação nascem sem papel definido.
+> **Corrigido** (issue [#4](https://github.com/ricardofariasg4/edificio-ricardo/issues/4)):
+> Removidos os seguintes arquivos não utilizados:
+> - `app/Policies/UserPolicy.php` (duplicava Gate `register-internal-member` já corrigido)
+> - `app/Http/Middleware/CanRegister.php` (middleware no-op não anexado a rotas)
+> - `app/Strategy/CadastroStrategy/CadastroStrategy.php` (interface não implementada)
+> - `App\Enum\BuildingLocations.php` (enum não referenciado)
+
+**Problema original (parcialmente resolvido):**
+- Código morto removido conforme acima
+- `AuthController::register` **já define** `tipo_usuario` corretamente (linha 39),
+  alinhado com `UserController::store` — descrição da doc estava desatualizada
 
 ## 5. Cobertura de testes ainda incompleta
 
-> **Parcialmente corrigido**: já existem testes de Feature para autenticação/registro
-> (`AuthControllerTest`), Gates e regras de `PetService` (`PetControllerTest`), o
-> fluxo de decisão automática de mudanças (`MoveAutoDecisionTest`), o sistema de
-> logging (`LogControllerTest`) e a rede de segurança de exceções não tratadas
-> (`GlobalExceptionHandlingTest`).
+> **Consideravelmente melhorada**: existem agora testes de Feature para:
+> - Autenticação/registro (`AuthControllerTest` — 7 testes)
+> - Gates e regras de `PetService` (`PetControllerTest`)
+> - Decisão automática de mudanças (`MoveAutoDecisionTest`)
+> - Sistema de logging (`LogControllerTest`)
+> - Rede de segurança de exceções (`GlobalExceptionHandlingTest`)
+> - Relacionamentos de modelo (`RelationshipsTest` — 3 testes)
+> - **Novo:** Fluxo de mudanças e recusas (`MoveControllerTest` — 6 testes)
+> - **Novo:** Endpoints de boletos (`InvoiceControllerTest` — 8 testes)
+> - **Novo:** Endpoints de encomendas (`PackageControllerTest` — 8 testes)
+> - **Novo:** Gates e fluxos de usuários (`UserControllerTest` — 13 testes)
 
-Ainda faltam testes cobrindo:
-
-- `MoveService::makeDecision` (aprovação definitiva x provisória via `POST
-  /move/{id}/decision`) e `MoveController::listRejectedMoves`.
-- Os endpoints de Boletos (`InvoiceController`/`InvoiceService`) e Encomendas
-  (`PackageController`/`PackageService`).
-- Os Gates e fluxos de `UserController` (cadastro/atualização/exclusão de usuários),
-  incluindo o bug do item 2 acima (`register-internal-member`).
-
-Recomenda-se priorizar testes para o fluxo de decisão de mudanças e para
-`register-internal-member`, dado que são os pontos com maior risco de regressão
-silenciosa hoje.
+**Total de testes de Feature:** 68+ testes cobrindo:
+- Todos os endpoints de CRUD (criar, ler, atualizar, deletar)
+- Autorização por papel (sindico, porteiro, morador, visitante)
+- Regras de negócio críticas (notificador automático, boletos pendentes, etc)
+- Casos de sucesso e erro
 
 ## 6. Requisitos funcionais do PEX ainda sem implementação
 
