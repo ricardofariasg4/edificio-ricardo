@@ -76,4 +76,74 @@ class AuthControllerTest extends TestCase
         $response->assertStatus(403);
         $this->assertDatabaseMissing('USUARIOS', ['email' => 'bloqueado@example.com']);
     }
+
+    public function test_sindico_pode_registrar_porteiro(): void
+    {
+        $sindico = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
+
+        $response = $this->actingAs($sindico)->postJson('/register', [
+            'nome' => 'Novo Porteiro',
+            'email' => 'novo.porteiro@example.com',
+            'senha' => 'password123',
+            'cpf' => '12345678905',
+            'tipo_usuario' => 'porteiro',
+        ]);
+
+        $response->assertStatus(201);
+        $this->assertDatabaseHas('USUARIOS', [
+            'email' => 'novo.porteiro@example.com',
+            'tipo_usuario' => 'porteiro',
+        ]);
+    }
+
+    public function test_porteiro_nao_pode_registrar_sindico(): void
+    {
+        $porteiro = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::PORTEIRO]);
+
+        $response = $this->actingAs($porteiro)->postJson('/register', [
+            'nome' => 'Novo Sindico',
+            'email' => 'novo.sindico@example.com',
+            'senha' => 'password123',
+            'cpf' => '12345678906',
+            'tipo_usuario' => 'sindico',
+        ]);
+
+        $response->assertStatus(403);
+        $this->assertDatabaseMissing('USUARIOS', ['email' => 'novo.sindico@example.com']);
+    }
+
+    public function test_morador_pode_registrar_visitante(): void
+    {
+        $morador = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::MORADOR]);
+
+        $response = $this->actingAs($morador)->postJson('/register', [
+            'nome' => 'Novo Visitante',
+            'email' => 'novo.visitante@example.com',
+            'senha' => 'password123',
+            'cpf' => '12345678907',
+            'tipo_usuario' => 'visitante',
+        ]);
+
+        $response->assertStatus(201);
+        $this->assertDatabaseHas('USUARIOS', [
+            'email' => 'novo.visitante@example.com',
+            'tipo_usuario' => 'visitante',
+        ]);
+    }
+
+    public function test_visitante_nao_pode_registrar_ninguem(): void
+    {
+        $visitante = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::VISITANTE]);
+
+        $response = $this->actingAs($visitante)->postJson('/register', [
+            'nome' => 'Novo Usuario',
+            'email' => 'novo.usuario@example.com',
+            'senha' => 'password123',
+            'cpf' => '12345678908',
+            'tipo_usuario' => 'visitante',
+        ]);
+
+        $response->assertStatus(403);
+        $this->assertDatabaseMissing('USUARIOS', ['email' => 'novo.usuario@example.com']);
+    }
 }

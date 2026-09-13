@@ -43,8 +43,9 @@ class AppServiceProvider extends ServiceProvider
     {
         // Gates para User
         Gate::define('register-internal-member', function (Usuario $user, string $targetRole) {
-            $userRole = CanRegister::from($user->tipo_usuario);
-            return $userRole?->canRegisterInternalMember($targetRole);
+            $userRole = CanRegister::fromPeopleBuilding($user->tipo_usuario);
+            $targetRoleEnum = CanRegister::fromString($targetRole);
+            return $userRole->canRegisterInternalMember($targetRoleEnum->value);
         });
 
         Gate::define('update-internal-member', function (Usuario $user, Request $request) {

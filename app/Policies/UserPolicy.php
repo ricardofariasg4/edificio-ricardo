@@ -9,7 +9,8 @@ class UserPolicy
 {
     public function registerInternalMember(Usuario $user, string $targetRole): bool
     {
-        $userRole = CanRegister::from($user->tipo_usuario);
-        return $userRole?->canRegisterInternalMember($targetRole);
+        $userRole = CanRegister::fromPeopleBuilding($user->tipo_usuario);
+        $targetRoleEnum = CanRegister::fromString($targetRole);
+        return $userRole->canRegisterInternalMember($targetRoleEnum->value);
     }
 }
