@@ -35,8 +35,35 @@ Regras aplicadas na camada `Services`, após validação e autorização do Cont
 ## Encomendas (`PackageService`)
 
 - Cadastro simples de encomenda (`codigo_rastreio`, `data_recebimento`, destinatário).
-- **Notificação pendente (RF04)**: o método `createPackage` tem um `TODO` explícito
-  indicando que o disparo de notificação ao morador ainda não foi implementado.
+- **Notificação automática (RF04)**: `createPackage` dispara `PackageArrivedNotification`
+  para o `id_usuario` destinatário logo após persistir a encomenda (issue
+  [#2](https://github.com/ricardofariasg4/edificio-ricardo/issues/2)).
+
+## Notificações (`NotificationService`) — issue #2
+
+Usa o mecanismo nativo `Illuminate\Notifications` do Laravel (canal `database`,
+síncrono — sem fila). `Usuario` já usa o trait `Notifiable`.
+
+- **RF03 — entrega por aplicativo**: `notifyDelivery` envia `DeliveryNotification`
+  a um único destinatário (morador/visitante). Disparado por
+  `POST /notifications/delivery`, restrito ao Gate `send-delivery-notification`
+  (apenas porteiro/admin, conforme o requisito original).
+- **RF04 — encomenda recebida**: `notifyPackageArrived` envia
+  `PackageArrivedNotification` ao destinatário da encomenda; chamado
+  automaticamente por `PackageService::createPackage` (ver acima).
+- **RF05 — manutenção predial programada**: `notifyMaintenanceScheduled` envia
+  `MaintenanceScheduledNotification` para **todos** os usuários com
+  `tipo_usuario = morador`. Disparado por `POST /notifications/maintenance`,
+  restrito ao Gate `send-maintenance-notification` (síndico/porteiro/admin).
+- **RF-Extra-1 — mudança aguardando aprovação**: `notifyMoveApprovalRequired` envia
+  `MoveApprovalRequiredNotification` para **todos** os usuários com
+  `tipo_usuario` em `sindico`/`porteiro`; chamado automaticamente por
+  `MoveService::createMove` sempre que uma mudança é agendada.
+- **Consulta**: `GET /notifications` lista as notificações do usuário autenticado
+  (mais recentes primeiro, paginadas, com contagem de não lidas em `meta.unread_count`);
+  `POST /notification/{id}/read` marca uma notificação específica como lida. Ambos
+  exigem apenas sessão autenticada — cada usuário só enxerga as próprias
+  notificações (`$user->notifications()`, escopado pelo relacionamento polimórfico).
 
 ## Mudanças (`MoveService`) — RF07
 
@@ -44,7 +71,10 @@ Fluxo central do sistema, cobrindo o requisito RF07 do levantamento original.
 
 ### Criação
 `createMove` força `status = 'pendente'` na criação, **independente do valor enviado
-no payload** — uma mudança nunca nasce já aprovada.
+no payload** — uma mudança nunca nasce já aprovada. Em seguida (RF-Extra-1, issue
+[#2](https://github.com/ricardofariasg4/edificio-ricardo/issues/2)), notifica todos
+os síndicos e porteiros de que há uma mudança aguardando decisão — ver
+[Notificações](#notificações-notificationservice--issue-2).
 
 ### Decisão (`makeDecision`)
 

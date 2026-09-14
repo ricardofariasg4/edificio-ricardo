@@ -80,6 +80,24 @@ respostas são sempre JSON. Todas as rotas abaixo, exceto as marcadas como
 > mecanismo de logging em
 > [Infraestrutura e ambiente](07-infraestrutura-e-ambiente.md#logging).
 
+## Notificações
+
+| Método | Rota | Controller@action | Middleware extra | Gate/Descrição |
+|---|---|---|---|---|
+| GET | `/notifications` | `NotificationController@index` | — | Lista as notificações do usuário autenticado, paginadas (`?page=`, `?per_page=`), mais recentes primeiro |
+| POST | `/notification/{id}/read` | `NotificationController@markAsRead` | — | Marca uma notificação (própria) como lida |
+| POST | `/notifications/delivery` | `NotificationController@notifyDelivery` | `EnsureRegistrationByAuthorized` | `send-delivery-notification` (RF03 — apenas porteiro/admin) |
+| POST | `/notifications/maintenance` | `NotificationController@notifyMaintenance` | `EnsureRegistrationByAuthorized` | `send-maintenance-notification` (RF05 — síndico/porteiro/admin) |
+
+> Endpoints entregues na issue
+> [#2](https://github.com/ricardofariasg4/edificio-ricardo/issues/2). Regras completas
+> em [Regras de negócio](05-regras-de-negocio.md#notificações-notificationservice--issue-2).
+> `POST /notifications/delivery` e `POST /notifications/maintenance` não persistem
+> uma entidade própria — apenas disparam a notificação (`201 Created` na resposta é
+> semântico, não indica um recurso consultável por id). RF04 (encomenda) e
+> RF-Extra-1 (mudança) são notificados automaticamente por seus respectivos fluxos
+> de criação, sem endpoint dedicado.
+
 ## Diversos
 
 | Método | Rota | Descrição |
