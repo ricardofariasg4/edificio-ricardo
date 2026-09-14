@@ -36,6 +36,7 @@ validadas e refinadas com o retorno da equipe operacional.
 | RF06 | Agendamento de prestadores de serviço, por porteiros e moradores | Modelado no DER (`PRESTADORES_DE_SERVICO`) e nas migrations, mas **sem endpoint de agendamento** dedicado (não existe `AppointmentController`/serviço equivalente) |
 | RF07 | Agendamento de mudanças com aprovação do síndico (ou provisória do porteiro) | Implementado por completo — ver `MoveController`/`MoveService` e [regras de negócio](05-regras-de-negocio.md#mudanças-rf07) |
 | RF-Extra-1 | Notificar síndicos e porteiros quando uma mudança precisa de aprovação | Implementado (issue [#2](https://github.com/ricardofariasg4/edificio-ricardo/issues/2)) — `MoveService::createMove` dispara `MoveApprovalRequiredNotification` para todos os síndicos/porteiros |
+| RF-Extra-2 | Reserva de ambientes comuns do prédio, com consulta de disponibilidade e fila de espera automática | Implementado (issue [#9](https://github.com/ricardofariasg4/edificio-ricardo/issues/9)) — `AmbienteController`/`ReservaController` + `ReservaService`, ver [regras de negócio](05-regras-de-negocio.md#reservas-de-ambientes-reservaservice--issue-9) |
 
 ## Requisitos não funcionais (RNF)
 

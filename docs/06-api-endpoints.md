@@ -98,6 +98,24 @@ respostas são sempre JSON. Todas as rotas abaixo, exceto as marcadas como
 > RF-Extra-1 (mudança) são notificados automaticamente por seus respectivos fluxos
 > de criação, sem endpoint dedicado.
 
+## Ambientes e reservas
+
+| Método | Rota | Controller@action | Middleware extra | Gate/Descrição |
+|---|---|---|---|---|
+| GET | `/ambientes` | `AmbienteController@index` | — | Lista o catálogo de ambientes comuns — qualquer autenticado |
+| GET | `/ambiente/{id}/disponibilidade` | `AmbienteController@disponibilidade` | — | Datas com reserva confirmada daquele ambiente (`?mes=YYYY-MM` opcional) |
+| POST | `/ambiente` | `AmbienteController@store` | — | `manage-ambientes` (síndico/admin) |
+| PUT | `/ambiente/{id}` | `AmbienteController@update` | — | `manage-ambientes` |
+| DELETE | `/ambiente/{id}` | `AmbienteController@destroy` | — | `manage-ambientes` |
+| GET | `/reservas` | `ReservaController@index` | — | `view-all-reservas` (ou lista as próprias) |
+| POST | `/reserva` | `ReservaController@store` | — | Qualquer autenticado — confirma na hora se a data estiver livre, senão entra na fila de espera |
+| DELETE | `/reserva/{id}` | `ReservaController@destroy` | — | `cancel-reserva` (dono ou admin/síndico/porteiro) — promove o próximo da fila automaticamente |
+
+> Endpoints entregues na issue
+> [#9](https://github.com/ricardofariasg4/edificio-ricardo/issues/9). Regras
+> completas em
+> [Regras de negócio](05-regras-de-negocio.md#reservas-de-ambientes-reservaservice--issue-9).
+
 ## Diversos
 
 | Método | Rota | Descrição |

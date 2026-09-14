@@ -10,6 +10,8 @@ use App\Http\Controllers\MoveController;
 use App\Http\Controllers\PetController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\AmbienteController;
+use App\Http\Controllers\ReservaController;
 
 // Authentication routes
 Route::controller(AuthController::class)->group(function () {
@@ -100,6 +102,25 @@ Route::middleware('auth')->group(function () {
             Route::post('/notifications/delivery', 'notifyDelivery');
             Route::post('/notifications/maintenance', 'notifyMaintenance');
         });
+    });
+
+    // Ambientes comuns e reservas (issue #9). Qualquer autenticado consulta o
+    // catálogo e a disponibilidade; gestão do catálogo é restrita a
+    // síndico/admin (Gate manage-ambientes). Reservas: qualquer autenticado
+    // solicita/cancela a própria (ou qualquer uma, se funcionário — Gates
+    // view-all-reservas/cancel-reserva).
+    Route::controller(AmbienteController::class)->group(function () {
+        Route::get('/ambientes', 'index');
+        Route::get('/ambiente/{id}/disponibilidade', 'disponibilidade');
+        Route::post('/ambiente', 'store');
+        Route::put('/ambiente/{id}', 'update');
+        Route::delete('/ambiente/{id}', 'destroy');
+    });
+
+    Route::controller(ReservaController::class)->group(function () {
+        Route::get('/reservas', 'index');
+        Route::post('/reserva', 'store');
+        Route::delete('/reserva/{id}', 'destroy');
     });
 });
 

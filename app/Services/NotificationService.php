@@ -6,11 +6,13 @@ use App\Enum\PeopleBuilding;
 use App\Exceptions\EntityNotFoundException;
 use App\Models\Encomenda;
 use App\Models\Mudanca;
+use App\Models\Reserva;
 use App\Models\Usuario;
 use App\Notifications\DeliveryNotification;
 use App\Notifications\MaintenanceScheduledNotification;
 use App\Notifications\MoveApprovalRequiredNotification;
 use App\Notifications\PackageArrivedNotification;
+use App\Notifications\ReservationPromotedNotification;
 use DateTimeInterface;
 
 class NotificationService
@@ -60,6 +62,15 @@ class NotificationService
     {
         $usuario = Usuario::find($package->id_usuario);
         $usuario?->notify(new PackageArrivedNotification($package));
+    }
+
+    /**
+     * Issue #9: notifica o usuário que acaba de ser promovido da fila de
+     * espera para uma reserva confirmada.
+     */
+    public function notifyReservationPromoted(Usuario $usuario, Reserva $reserva): void
+    {
+        $usuario->notify(new ReservationPromotedNotification($reserva));
     }
 
     /**

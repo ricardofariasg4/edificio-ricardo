@@ -131,3 +131,32 @@ o que ainda não está configurado no `docker-compose.yml`), avalia toda mudanç
 
 Mudanças já `aprovado`/`recusado`, ou com `data` a mais de 24h de distância, não são
 tocadas.
+
+## Reservas de ambientes (`ReservaService`) — issue #9
+
+Catálogo de ambientes comuns (`AmbienteService`/`AmbienteController`, CRUD
+restrito ao Gate `manage-ambientes` — síndico/admin) e reservas desses ambientes
+por data, com fila de espera automática.
+
+- **Consulta de disponibilidade**: `GET /ambiente/{id}/disponibilidade` (qualquer
+  autenticado) retorna as datas com reserva `confirmada` daquele ambiente
+  (opcionalmente filtradas por `?mes=YYYY-MM`), para o cliente calcular as datas
+  livres por exclusão.
+- **Solicitação de reserva** (`createReservation`, `POST /reserva`): se não houver
+  reserva `confirmada` para aquele `id_ambiente`+`data`, a nova reserva já nasce
+  `confirmada`. Se já houver, a nova reserva entra na fila de espera
+  (`status=fila_espera`) com `posicao_fila` sequencial (1, 2, 3...). Um mesmo
+  usuário não pode ter duas solicitações ativas (`confirmada` ou `fila_espera`)
+  para o mesmo ambiente+data — a segunda tentativa é rejeitada com
+  `EntityCreateException`.
+- **Cancelamento e promoção automática da fila** (`cancelReservation`,
+  `DELETE /reserva/{id}`, Gate `cancel-reserva`: dono da reserva ou
+  admin/síndico/porteiro): a reserva é marcada `cancelada`. Se ela estava
+  `confirmada`, o próximo da fila para aquele ambiente+data (menor
+  `posicao_fila`) é promovido automaticamente para `confirmada`
+  (`posicao_fila` volta a `null`) e recebe uma notificação
+  (`ReservationPromotedNotification`, reaproveitando o sistema de notificações
+  da issue [#2](https://github.com/ricardofariasg4/edificio-ricardo/issues/2)).
+  Se não houver ninguém na fila, o cancelamento não tem efeito colateral.
+- **Listagem** (`GET /reservas`): morador vê apenas as próprias reservas;
+  admin/síndico/porteiro veem todas (Gate `view-all-reservas`).

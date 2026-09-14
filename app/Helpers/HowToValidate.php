@@ -117,4 +117,30 @@ class HowToValidate
             'data_agendada' => 'required|date_format:Y-m-d H:i:s|after:today',
         ];
     }
+
+    public static function getAmbienteStoreRules(): array
+    {
+        return [
+            'nome' => 'required|string|max:100',
+            'descricao' => 'nullable|string|max:1000',
+            'capacidade' => 'nullable|integer|min:1',
+        ];
+    }
+
+    public static function getAmbienteUpdateRules(): array
+    {
+        return [
+            'nome' => 'nullable|string|max:100',
+            'descricao' => 'nullable|string|max:1000',
+            'capacidade' => 'nullable|integer|min:1',
+        ];
+    }
+
+    public static function getReservaStoreRules(): array
+    {
+        return [
+            'id_ambiente' => 'required|integer|exists:AMBIENTES,id_ambiente',
+            'data' => 'required|date_format:Y-m-d|after:today',
+        ];
+    }
 }

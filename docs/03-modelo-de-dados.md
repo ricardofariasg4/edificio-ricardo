@@ -87,6 +87,23 @@ evolução abaixo), `observacao` (text, nullable — motivo da recusa), `id_mora
    O `down()` primeiro reverte quaisquer linhas `recusado` para `pendente` antes de
    encolher o enum, evitando erro de truncamento no rollback.
 
+### `AMBIENTES` (issue [#9](https://github.com/ricardofariasg4/edificio-ricardo/issues/9))
+`id_ambiente` (PK), `nome` (varchar(100)), `descricao` (text, nullable),
+`capacidade` (unsigned int, nullable) — catálogo de ambientes comuns do prédio
+(salão de festas, churrasqueira, etc.), gerenciado por síndico/admin.
+
+### `RESERVAS` (issue #9)
+`id_reserva` (PK), `id_ambiente` (FK → `AMBIENTES.id_ambiente`, cascade),
+`id_usuario` (FK → `USUARIOS.id_usuario`, cascade), `data` (date — dia
+reservado), `status` (enum: `confirmada`, `fila_espera`, `cancelada`),
+`posicao_fila` (unsigned int, nullable — só relevante quando
+`status = fila_espera`; menor valor = mais próximo do início da fila).
+
+Não há constraint de unicidade no banco para "uma única `confirmada` por
+`id_ambiente`+`data`" (MySQL não suporta índice único parcial de forma simples) —
+regra garantida em `ReservaService`, mesmo padrão usado para outras regras de
+negócio do projeto (ver [Regras de negócio](05-regras-de-negocio.md#reservas-de-ambientes-reservaservice--issue-9)).
+
 ## Migrations, em ordem cronológica
 
 1. `0001_01_01_000001_create_cache_table.php` / `..._create_jobs_table.php` — tabelas
@@ -101,6 +118,13 @@ evolução abaixo), `observacao` (text, nullable — motivo da recusa), `id_mora
    (instalada, mas sem uso ativo — ver [Infraestrutura](07-infraestrutura-e-ambiente.md)).
 5. `2026_05_04_000001_add_recusado_to_mudancas_status_enum.php` — adiciona o status
    `recusado`, parte da issue [#4](https://github.com/ricardofariasg4/edificio-ricardo/issues/4).
+6. `2026_09_14_000001_create_notifications_table.php` — tabela do sistema de
+   notificações, issue [#2](https://github.com/ricardofariasg4/edificio-ricardo/issues/2).
+7. `2026_09_15_000001_create_AMBIENTES_table.php` e
+   `2026_09_15_000002_create_RESERVAS_table.php` — catálogo de ambientes comuns e
+   reservas, issue [#9](https://github.com/ricardofariasg4/edificio-ricardo/issues/9)
+   (FKs já incluídas na própria migration de criação, diferente do padrão
+   create+add_foreign_keys separados usado nas tabelas geradas originalmente).
 
 ## Seeders e dados de exemplo
 

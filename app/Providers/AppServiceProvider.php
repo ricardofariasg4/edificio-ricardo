@@ -20,6 +20,11 @@ use App\Repositories\PackageRepository;
 use App\Repositories\PackageRepositoryInterface;
 use App\Repositories\MoveRepository;
 use App\Repositories\MoveRepositoryInterface;
+use App\Repositories\AmbienteRepository;
+use App\Repositories\AmbienteRepositoryInterface;
+use App\Repositories\ReservaRepository;
+use App\Repositories\ReservaRepositoryInterface;
+use App\Models\Reserva;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -34,6 +39,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(InvoiceRepositoryInterface::class, InvoiceRepository::class);
         $this->app->bind(PackageRepositoryInterface::class, PackageRepository::class);
         $this->app->bind(MoveRepositoryInterface::class, MoveRepository::class);
+        $this->app->bind(AmbienteRepositoryInterface::class, AmbienteRepository::class);
+        $this->app->bind(ReservaRepositoryInterface::class, ReservaRepository::class);
     }
 
     /**
@@ -198,6 +205,22 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('send-maintenance-notification', function (Usuario $user) {
             // RF05: manutenção predial programada, agendada por síndico/porteiro
             return in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO]);
+        });
+
+        // Gates para Ambientes/Reservas (issue #9)
+        Gate::define('manage-ambientes', function (Usuario $user) {
+            return in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO]);
+        });
+
+        Gate::define('view-all-reservas', function (Usuario $user) {
+            return in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO]);
+        });
+
+        Gate::define('cancel-reserva', function (Usuario $user, Reserva $reserva) {
+            if (in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO])) {
+                return true;
+            }
+            return $user->id_usuario === $reserva->id_usuario;
         });
     }
 }
