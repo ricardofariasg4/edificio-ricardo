@@ -32,11 +32,11 @@ class PetControllerTest extends TestCase
             'nome' => 'Rex',
             'peso' => 10,
             'vacinado' => true,
-            'id_morador' => $morador->id_usuario,
+            'id_morador' => $morador->id,
         ]);
 
         $response->assertStatus(201);
-        $this->assertDatabaseHas('PETS', ['nome' => 'Rex', 'id_morador' => $morador->id_usuario]);
+        $this->assertDatabaseHas('pets', ['nome' => 'Rex', 'id_morador' => $morador->id]);
     }
 
     public function test_cadastro_de_pet_nao_vacinado_e_rejeitado(): void
@@ -46,11 +46,11 @@ class PetControllerTest extends TestCase
         $response = $this->actingAs($morador)->postJson('/pet', [
             'nome' => 'Rex',
             'vacinado' => false,
-            'id_morador' => $morador->id_usuario,
+            'id_morador' => $morador->id,
         ]);
 
         $response->assertStatus(400);
-        $this->assertDatabaseMissing('PETS', ['nome' => 'Rex']);
+        $this->assertDatabaseMissing('pets', ['nome' => 'Rex']);
     }
 
     public function test_morador_nao_pode_cadastrar_pet_para_outro_morador(): void
@@ -61,7 +61,7 @@ class PetControllerTest extends TestCase
         $response = $this->actingAs($morador)->postJson('/pet', [
             'nome' => 'Rex',
             'vacinado' => true,
-            'id_morador' => $outroMorador->id_usuario,
+            'id_morador' => $outroMorador->id,
         ]);
 
         $response->assertStatus(403);
@@ -75,7 +75,7 @@ class PetControllerTest extends TestCase
         $response = $this->actingAs($porteiro)->postJson('/pet', [
             'nome' => 'Rex',
             'vacinado' => true,
-            'id_morador' => $morador->id_usuario,
+            'id_morador' => $morador->id,
         ]);
 
         $response->assertStatus(201);
@@ -86,8 +86,8 @@ class PetControllerTest extends TestCase
         $morador = $this->moradorUser();
         $outroMorador = $this->moradorUser();
 
-        Pet::factory()->create(['id_morador' => $morador->id_usuario]);
-        Pet::factory()->create(['id_morador' => $outroMorador->id_usuario]);
+        Pet::factory()->create(['id_morador' => $morador->id]);
+        Pet::factory()->create(['id_morador' => $outroMorador->id]);
 
         $response = $this->actingAs($morador)->getJson('/pets');
 
@@ -98,7 +98,7 @@ class PetControllerTest extends TestCase
     public function test_sindico_ve_todos_os_pets_no_index(): void
     {
         $sindico = $this->staffUser(PeopleBuilding::SINDICO);
-        Pet::factory()->count(3)->create(['id_morador' => $this->moradorUser()->id_usuario]);
+        Pet::factory()->count(3)->create(['id_morador' => $this->moradorUser()->id]);
 
         $response = $this->actingAs($sindico)->getJson('/pets');
 
@@ -109,9 +109,9 @@ class PetControllerTest extends TestCase
     public function test_morador_nao_pode_ver_pet_de_outro_morador(): void
     {
         $morador = $this->moradorUser();
-        $pet = Pet::factory()->create(['id_morador' => $this->moradorUser()->id_usuario]);
+        $pet = Pet::factory()->create(['id_morador' => $this->moradorUser()->id]);
 
-        $response = $this->actingAs($morador)->getJson("/pet/{$pet->id_pet}");
+        $response = $this->actingAs($morador)->getJson("/pet/{$pet->id}");
 
         $response->assertStatus(403);
     }
@@ -128,48 +128,48 @@ class PetControllerTest extends TestCase
     public function test_nao_e_permitido_remover_vacinacao_do_pet(): void
     {
         $morador = $this->moradorUser();
-        $pet = Pet::factory()->create(['id_morador' => $morador->id_usuario, 'vacinado' => true]);
+        $pet = Pet::factory()->create(['id_morador' => $morador->id, 'vacinado' => true]);
 
-        $response = $this->actingAs($morador)->putJson("/pet/{$pet->id_pet}", [
+        $response = $this->actingAs($morador)->putJson("/pet/{$pet->id}", [
             'vacinado' => false,
         ]);
 
         $response->assertStatus(400);
-        $this->assertDatabaseHas('PETS', ['id_pet' => $pet->id_pet, 'vacinado' => true]);
+        $this->assertDatabaseHas('pets', ['id' => $pet->id, 'vacinado' => true]);
     }
 
     public function test_dono_pode_atualizar_nome_do_pet(): void
     {
         $morador = $this->moradorUser();
-        $pet = Pet::factory()->create(['id_morador' => $morador->id_usuario, 'vacinado' => true]);
+        $pet = Pet::factory()->create(['id_morador' => $morador->id, 'vacinado' => true]);
 
-        $response = $this->actingAs($morador)->putJson("/pet/{$pet->id_pet}", [
+        $response = $this->actingAs($morador)->putJson("/pet/{$pet->id}", [
             'nome' => 'Novo Nome',
         ]);
 
         $response->assertStatus(200);
-        $this->assertDatabaseHas('PETS', ['id_pet' => $pet->id_pet, 'nome' => 'Novo Nome']);
+        $this->assertDatabaseHas('pets', ['id' => $pet->id, 'nome' => 'Novo Nome']);
     }
 
     public function test_dono_pode_deletar_seu_pet(): void
     {
         $morador = $this->moradorUser();
-        $pet = Pet::factory()->create(['id_morador' => $morador->id_usuario]);
+        $pet = Pet::factory()->create(['id_morador' => $morador->id]);
 
-        $response = $this->actingAs($morador)->deleteJson("/pet/{$pet->id_pet}");
+        $response = $this->actingAs($morador)->deleteJson("/pet/{$pet->id}");
 
         $response->assertStatus(200);
-        $this->assertDatabaseMissing('PETS', ['id_pet' => $pet->id_pet]);
+        $this->assertDatabaseMissing('pets', ['id' => $pet->id]);
     }
 
     public function test_morador_nao_pode_deletar_pet_de_outro_morador(): void
     {
         $morador = $this->moradorUser();
-        $pet = Pet::factory()->create(['id_morador' => $this->moradorUser()->id_usuario]);
+        $pet = Pet::factory()->create(['id_morador' => $this->moradorUser()->id]);
 
-        $response = $this->actingAs($morador)->deleteJson("/pet/{$pet->id_pet}");
+        $response = $this->actingAs($morador)->deleteJson("/pet/{$pet->id}");
 
         $response->assertStatus(403);
-        $this->assertDatabaseHas('PETS', ['id_pet' => $pet->id_pet]);
+        $this->assertDatabaseHas('pets', ['id' => $pet->id]);
     }
 }

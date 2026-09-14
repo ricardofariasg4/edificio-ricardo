@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('MORADORES', function (Blueprint $table) {
-            $table->unsignedInteger('id_usuario')->index('idx_morador_usuario_idusuario');
-            $table->unsignedSmallInteger('numero_apto');
-            $table->timestamps();
-            $table->primary(['id_usuario']);
+        Schema::table('moradores', function (Blueprint $table) {
+            $table->foreign(['usuario_id'], 'fk_moradores_usuario_id')->references(['id'])->on('usuarios')->onUpdate('no action')->onDelete('cascade');
         });
     }
 
@@ -24,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('MORADORES');
+        Schema::table('moradores', function (Blueprint $table) {
+            $table->dropForeign('fk_moradores_usuario_id');
+        });
     }
 };

@@ -198,23 +198,28 @@ real (o SQLite in-memory usado por padrão em `phpunit.xml` não expõe o mesmo
 comportamento de forma tão direta) — reforça o valor de validar periodicamente
 contra o banco de produção real, não só o de teste.
 
-## 9. Tabelas de extensão (MORADORES/SINDICOS/PORTEIROS/VISITANTES/PRESTADORES_DE_SERVICO) nunca são criadas ao registrar um usuário
+> **Nota (issue #12):** a padronização de nomenclatura do banco (item 12 abaixo)
+> substituiu esse esquema por completo — as 5 tabelas de papel ganharam um `id`
+> autoincremento próprio e `usuario_id` como FK única, eliminando também a
+> necessidade de `$incrementing = false`.
+
+## 9. Tabelas de extensão (moradores/sindicos/porteiros/visitantes/prestadores_de_servico) nunca são criadas ao registrar um usuário
 
 **Prioridade sugerida: crítica — bloqueia o fluxo real de uso de RF01/RF02/RF04/RF06/RF07 para qualquer usuário cadastrado pela API.**
 
 Nem `UserController::store` nem `AuthController::register` criam a linha
-correspondente na tabela de papel (`MORADORES`, `SINDICOS`, etc.) ao cadastrar um
+correspondente na tabela de papel (`moradores`, `sindicos`, etc.) ao cadastrar um
 `Usuario` com `tipo_usuario = morador` (ou síndico/porteiro/visitante/prestador).
 Confirmado por busca no código: não há nenhuma chamada a `Morador::create()`,
 `Sindico::create()` etc. em `app/Services` ou `app/Http/Controllers`.
 
 **Impacto:** um morador cadastrado via `POST /user` ou `POST /register` **não
 consegue** usar a maior parte da API depois, porque praticamente todo endpoint que
-recebe `id_morador` valida `exists:MORADORES,id_usuario` (`HowToValidate::getMoveStoreRules`,
+recebe `id_morador` valida `exists:moradores,usuario_id` (`HowToValidate::getMoveStoreRules`,
 `getInvoiceStoreRules`, `getPetStoreRules`) — a validação falha porque a linha em
-`MORADORES` nunca foi criada. Da mesma forma, `UserService::deleteUserById` chama
+`moradores` nunca foi criada. Da mesma forma, `UserService::deleteUserById` chama
 `$user->morador()->first()->boletos()`, que quebra com `Error: Call to a member
-function boletos() on null` para um morador sem entrada em `MORADORES` (reproduzido
+function boletos() on null` para um morador sem entrada em `moradores` (reproduzido
 durante os testes desta sessão antes de usarmos `Morador::factory()->create()`
 diretamente, que cria as duas tabelas).
 
@@ -227,9 +232,10 @@ que mascarou a lacuna.
 **Caminho de correção sugerido (não aplicado aqui, fora do escopo desta sessão):**
 em `UserService::createNewUser` (e no fluxo equivalente de `AuthController::register`),
 após criar o `Usuario`, criar a linha correspondente na tabela de papel com base em
-`tipo_usuario` — por exemplo, um `match` que chama `Morador::create(['id_usuario' =>
-$user->id_usuario, 'numero_apto' => ...])` etc. Isso exigiria também repensar quais
-campos extras cada papel precisa no payload de cadastro (`numero_apto` para morador,
+`tipo_usuario` — por exemplo, um `match` que chama `Morador::create(['usuario_id' =>
+$user->id, 'numero_apto' => ...])` etc. (nomes de coluna atualizados pela
+padronização da issue #12). Isso exigiria também repensar quais campos extras cada
+papel precisa no payload de cadastro (`numero_apto` para morador,
 `turno_de_trabalho` para porteiro, `visita_de` para visitante, `data_ultimo_trabalho`
 para prestador) — hoje nenhum desses campos é aceito pelas rotas de cadastro.
 
@@ -251,7 +257,7 @@ usuário OU é funcionário". Corrigido removendo a chamada redundante a
 
 ```php
 Gate::define('update-internal-member', function (Usuario $user, Request $request) {
-    return $user->id_usuario === (int) $request->route('id');
+    return $user->id === (int) $request->route('id');
 });
 ```
 
@@ -264,3 +270,42 @@ como está por não haver requisito explícito no PEX sobre isso; comportamento 
 coberto por teste (`UserControllerTest::test_sindico_nao_pode_atualizar_outro_usuario`)
 para deixá-lo explícito e evitar regressão silenciosa caso a intenção real seja
 diferente.
+
+## 12. Padronização de nomenclatura do banco (issue #12)
+
+> **Corrigido** (issue [#12](https://github.com/ricardofariasg4/edificio-ricardo/issues/12)).
+
+Todas as tabelas foram renomeadas de `SCREAMING_SNAKE_CASE` para `snake_case`
+minúsculo, e as 5 tabelas "regulares" com PK própria (`usuarios`, `boletos`,
+`encomendas`, `mudancas`, `pets`) tiveram sua chave primária renomeada de
+`id_<entidade>` para `id` — eliminando a necessidade de `protected $table` e
+`protected $primaryKey` nesses 5 models.
+
+Nas 5 tabelas de papel (`moradores`, `sindicos`, `porteiros`, `visitantes`,
+`prestadores_de_servico`), que usavam `id_usuario` como PK e FK simultaneamente
+(herança por tabela), foi adicionado um `id` autoincremento próprio e a antiga
+`id_usuario` foi renomeada para `usuario_id` (FK única para `usuarios.id`) — ver
+[Modelo de dados](03-modelo-de-dados.md) para o mapeamento completo. Isso elimina
+`$primaryKey`/`$incrementing` customizados nesses models, ao custo de uma coluna
+`id` redundante (o dado semanticamente relevante continua em `usuario_id`).
+
+**Duas exceções que ainda exigem `protected $table`:** `Morador` (tabela
+`moradores`) e `PrestadorDeServico` (tabela `prestadores_de_servico`) — a
+pluralização automática do Eloquent usa regras em inglês e erra para essas duas
+palavras (`morador` → `moradors`; pluraliza só a última palavra de
+`prestador_de_servico` → `prestador_de_servicos`). As outras 8 tabelas
+(`usuarios`, `sindicos`, `porteiros`, `visitantes`, `boletos`, `encomendas`,
+`mudancas`, `pets`) coincidem com a pluralização automática do Eloquent e não
+precisam de nenhuma customização.
+
+Colunas de FK semânticas (`id_morador`, `id_autorizador`, `id_notificador`, e o
+`id_usuario` "dono" em `encomendas`) foram mantidas como estão — já funcionavam via
+`belongsTo(Model::class, 'coluna')` explícito e não exigiam customização de PK.
+`id_morador` (em `boletos`/`pets`/`mudancas`) agora referencia `moradores.usuario_id`
+em vez de `moradores.id` (o novo surrogate), preservando os valores/semântica
+anteriores à padronização.
+
+Validado rodando a suíte completa (87 testes) contra MySQL real via Docker Compose
+após `migrate:fresh`, e manualmente via `tinker` conferindo que as relações
+(`$morador->usuario`, `$usuario->morador`, `$morador->boletos`,
+`$boleto->pertenceAoMorador`) resolvem os registros corretos.

@@ -18,14 +18,14 @@ class NotificationControllerTest extends TestCase
         $morador = Morador::factory()->create();
 
         $response = $this->actingAs($porteiro)->postJson('/notifications/delivery', [
-            'id_destinatario' => $morador->id_usuario,
+            'id_destinatario' => $morador->usuario_id,
             'aplicativo' => 'ifood',
             'observacao' => 'Deixado com o porteiro do turno da tarde',
         ]);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('notifications', [
-            'notifiable_id' => $morador->id_usuario,
+            'notifiable_id' => $morador->usuario_id,
             'notifiable_type' => Usuario::class,
         ]);
     }
@@ -36,7 +36,7 @@ class NotificationControllerTest extends TestCase
         $outroMorador = Morador::factory()->create();
 
         $response = $this->actingAs($morador->usuario)->postJson('/notifications/delivery', [
-            'id_destinatario' => $outroMorador->id_usuario,
+            'id_destinatario' => $outroMorador->usuario_id,
             'aplicativo' => 'rappi',
         ]);
 
@@ -50,7 +50,7 @@ class NotificationControllerTest extends TestCase
         $morador = Morador::factory()->create();
 
         $response = $this->actingAs($sindico)->postJson('/notifications/delivery', [
-            'id_destinatario' => $morador->id_usuario,
+            'id_destinatario' => $morador->usuario_id,
             'aplicativo' => 'ifood',
         ]);
 
@@ -70,8 +70,8 @@ class NotificationControllerTest extends TestCase
         ]);
 
         $response->assertStatus(201);
-        $this->assertDatabaseHas('notifications', ['notifiable_id' => $morador1->id_usuario]);
-        $this->assertDatabaseHas('notifications', ['notifiable_id' => $morador2->id_usuario]);
+        $this->assertDatabaseHas('notifications', ['notifiable_id' => $morador1->usuario_id]);
+        $this->assertDatabaseHas('notifications', ['notifiable_id' => $morador2->usuario_id]);
     }
 
     public function test_morador_nao_pode_notificar_manutencao(): void
@@ -95,12 +95,12 @@ class NotificationControllerTest extends TestCase
         $response = $this->actingAs($sindico)->postJson('/package', [
             'codigo_rastreio' => 'BR999888777',
             'data_recebimento' => '2024-09-15',
-            'id_usuario' => $morador->id_usuario,
+            'id_usuario' => $morador->usuario_id,
         ]);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('notifications', [
-            'notifiable_id' => $morador->id_usuario,
+            'notifiable_id' => $morador->usuario_id,
             'type' => \App\Notifications\PackageArrivedNotification::class,
         ]);
     }
@@ -113,16 +113,16 @@ class NotificationControllerTest extends TestCase
 
         $response = $this->actingAs($morador->usuario)->postJson('/move', [
             'data' => now()->addDays(5)->format('Y-m-d H:i:s'),
-            'id_morador' => $morador->id_usuario,
+            'id_morador' => $morador->usuario_id,
         ]);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('notifications', [
-            'notifiable_id' => $sindico->id_usuario,
+            'notifiable_id' => $sindico->id,
             'type' => \App\Notifications\MoveApprovalRequiredNotification::class,
         ]);
         $this->assertDatabaseHas('notifications', [
-            'notifiable_id' => $porteiro->id_usuario,
+            'notifiable_id' => $porteiro->id,
             'type' => \App\Notifications\MoveApprovalRequiredNotification::class,
         ]);
     }
@@ -133,7 +133,7 @@ class NotificationControllerTest extends TestCase
         $morador = Morador::factory()->create();
 
         $this->actingAs($porteiro)->postJson('/notifications/delivery', [
-            'id_destinatario' => $morador->id_usuario,
+            'id_destinatario' => $morador->usuario_id,
             'aplicativo' => 'ifood',
         ]);
 
@@ -150,7 +150,7 @@ class NotificationControllerTest extends TestCase
         $morador = Morador::factory()->create();
 
         $this->actingAs($porteiro)->postJson('/notifications/delivery', [
-            'id_destinatario' => $morador->id_usuario,
+            'id_destinatario' => $morador->usuario_id,
             'aplicativo' => 'ifood',
         ]);
 

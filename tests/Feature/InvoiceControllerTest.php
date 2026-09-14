@@ -19,8 +19,8 @@ class InvoiceControllerTest extends TestCase
         $morador1 = Morador::factory()->create();
         $morador2 = Morador::factory()->create();
 
-        Boleto::factory()->create(['id_morador' => $morador1->id_usuario, 'id_notificador' => $sindico->id_usuario]);
-        Boleto::factory()->create(['id_morador' => $morador2->id_usuario, 'id_notificador' => $sindico->id_usuario]);
+        Boleto::factory()->create(['id_morador' => $morador1->usuario_id, 'id_notificador' => $sindico->id]);
+        Boleto::factory()->create(['id_morador' => $morador2->usuario_id, 'id_notificador' => $sindico->id]);
 
         $response = $this->actingAs($sindico)->getJson('/invoices');
 
@@ -34,8 +34,8 @@ class InvoiceControllerTest extends TestCase
         $morador2 = Morador::factory()->create();
         $sindico = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
 
-        Boleto::factory()->create(['id_morador' => $morador1->id_usuario, 'id_notificador' => $sindico->id_usuario]);
-        Boleto::factory()->create(['id_morador' => $morador2->id_usuario, 'id_notificador' => $sindico->id_usuario]);
+        Boleto::factory()->create(['id_morador' => $morador1->usuario_id, 'id_notificador' => $sindico->id]);
+        Boleto::factory()->create(['id_morador' => $morador2->usuario_id, 'id_notificador' => $sindico->id]);
 
         $response = $this->actingAs($morador1->usuario)->getJson('/invoices');
 
@@ -52,14 +52,14 @@ class InvoiceControllerTest extends TestCase
             'valor' => 500.00,
             'vencimento' => '2024-10-31',
             'status_pagamento' => 0,
-            'id_morador' => $morador->id_usuario,
+            'id_morador' => $morador->usuario_id,
         ]);
 
         $response->assertStatus(201);
-        $this->assertDatabaseHas('BOLETOS', [
+        $this->assertDatabaseHas('boletos', [
             'valor' => 500.00,
-            'id_morador' => $morador->id_usuario,
-            'id_notificador' => $sindico->id_usuario,
+            'id_morador' => $morador->usuario_id,
+            'id_notificador' => $sindico->id,
         ]);
     }
 
@@ -72,7 +72,7 @@ class InvoiceControllerTest extends TestCase
             'valor' => 500.00,
             'vencimento' => '2024-10-31',
             'status_pagamento' => 0,
-            'id_morador' => $morador2->id_usuario,
+            'id_morador' => $morador2->usuario_id,
         ]);
 
         $response->assertStatus(403);
@@ -82,21 +82,21 @@ class InvoiceControllerTest extends TestCase
     {
         $sindico = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
         $morador = Morador::factory()->create();
-        $boleto = Boleto::factory()->create(['id_morador' => $morador->id_usuario, 'id_notificador' => $sindico->id_usuario]);
+        $boleto = Boleto::factory()->create(['id_morador' => $morador->usuario_id, 'id_notificador' => $sindico->id]);
 
-        $response = $this->actingAs($sindico)->getJson("/invoice/{$boleto->id_boleto}");
+        $response = $this->actingAs($sindico)->getJson("/invoice/{$boleto->id}");
 
         $response->assertStatus(200);
-        $this->assertEquals($boleto->id_boleto, $response->json('id_boleto'));
+        $this->assertEquals($boleto->id, $response->json('id'));
     }
 
     public function test_morador_ve_seu_boleto(): void
     {
         $morador = Morador::factory()->create();
         $sindico = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
-        $boleto = Boleto::factory()->create(['id_morador' => $morador->id_usuario, 'id_notificador' => $sindico->id_usuario]);
+        $boleto = Boleto::factory()->create(['id_morador' => $morador->usuario_id, 'id_notificador' => $sindico->id]);
 
-        $response = $this->actingAs($morador->usuario)->getJson("/invoice/{$boleto->id_boleto}");
+        $response = $this->actingAs($morador->usuario)->getJson("/invoice/{$boleto->id}");
 
         $response->assertStatus(200);
     }
@@ -106,9 +106,9 @@ class InvoiceControllerTest extends TestCase
         $morador1 = Morador::factory()->create();
         $morador2 = Morador::factory()->create();
         $sindico = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
-        $boleto = Boleto::factory()->create(['id_morador' => $morador2->id_usuario, 'id_notificador' => $sindico->id_usuario]);
+        $boleto = Boleto::factory()->create(['id_morador' => $morador2->usuario_id, 'id_notificador' => $sindico->id]);
 
-        $response = $this->actingAs($morador1->usuario)->getJson("/invoice/{$boleto->id_boleto}");
+        $response = $this->actingAs($morador1->usuario)->getJson("/invoice/{$boleto->id}");
 
         $response->assertStatus(403);
     }
@@ -117,16 +117,16 @@ class InvoiceControllerTest extends TestCase
     {
         $sindico = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
         $morador = Morador::factory()->create();
-        $boleto = Boleto::factory()->create(['id_morador' => $morador->id_usuario, 'id_notificador' => $sindico->id_usuario]);
+        $boleto = Boleto::factory()->create(['id_morador' => $morador->usuario_id, 'id_notificador' => $sindico->id]);
 
-        $response = $this->actingAs($sindico)->putJson("/invoice/{$boleto->id_boleto}", [
+        $response = $this->actingAs($sindico)->putJson("/invoice/{$boleto->id}", [
             'valor' => 600.00,
             'status_pagamento' => 1,
         ]);
 
         $response->assertStatus(200);
-        $this->assertDatabaseHas('BOLETOS', [
-            'id_boleto' => $boleto->id_boleto,
+        $this->assertDatabaseHas('boletos', [
+            'id' => $boleto->id,
             'valor' => 600.00,
             'status_pagamento' => 1,
         ]);
@@ -136,11 +136,11 @@ class InvoiceControllerTest extends TestCase
     {
         $sindico = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
         $morador = Morador::factory()->create();
-        $boleto = Boleto::factory()->create(['id_morador' => $morador->id_usuario, 'id_notificador' => $sindico->id_usuario]);
+        $boleto = Boleto::factory()->create(['id_morador' => $morador->usuario_id, 'id_notificador' => $sindico->id]);
 
-        $response = $this->actingAs($sindico)->deleteJson("/invoice/{$boleto->id_boleto}");
+        $response = $this->actingAs($sindico)->deleteJson("/invoice/{$boleto->id}");
 
         $response->assertStatus(200);
-        $this->assertDatabaseMissing('BOLETOS', ['id_boleto' => $boleto->id_boleto]);
+        $this->assertDatabaseMissing('boletos', ['id' => $boleto->id]);
     }
 }

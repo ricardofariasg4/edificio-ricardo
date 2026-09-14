@@ -31,9 +31,9 @@ validadas e refinadas com o retorno da equipe operacional.
 | RF01 | Cadastro de moradores e visitantes com controle de permissão (apenas síndico/porteiro) | Implementado via `UserController::store` + Gate `register-internal-member` (bug de tipos do Gate corrigido na issue [#2](https://github.com/ricardofariasg4/edificio-ricardo/issues/2); ver [débitos técnicos](08-debitos-tecnicos-e-limitacoes.md) quanto a uma limitação maior ainda pendente) |
 | RF02 | Envio de boletos do condomínio com restrição de acesso (apenas síndico/porteiro) | Implementado via `InvoiceController`/`InvoiceService` |
 | RF03 | Notificação de entregas de serviços por aplicativo (ifood, rappi etc.), considerando moradores e visitantes, enviada apenas por porteiros | Implementado (issue [#2](https://github.com/ricardofariasg4/edificio-ricardo/issues/2)) — `POST /notifications/delivery`, restrito ao Gate `send-delivery-notification` (porteiro/admin) |
-| RF04 | Notificação de recebimento de encomendas (Correios, Mercado Livre, transportadoras) | Implementado por completo — cadastro (`PackageController`/`ENCOMENDAS`) dispara `PackageArrivedNotification` automaticamente em `PackageService::createPackage` (issue [#2](https://github.com/ricardofariasg4/edificio-ricardo/issues/2)) |
+| RF04 | Notificação de recebimento de encomendas (Correios, Mercado Livre, transportadoras) | Implementado por completo — cadastro (`PackageController`/`encomendas`) dispara `PackageArrivedNotification` automaticamente em `PackageService::createPackage` (issue [#2](https://github.com/ricardofariasg4/edificio-ricardo/issues/2)) |
 | RF05 | Notificação de manutenções prediais programadas | Implementado (issue [#2](https://github.com/ricardofariasg4/edificio-ricardo/issues/2)) — `POST /notifications/maintenance` notifica todos os moradores, restrito ao Gate `send-maintenance-notification` (síndico/porteiro/admin) |
-| RF06 | Agendamento de prestadores de serviço, por porteiros e moradores | Modelado no DER (`PRESTADORES_DE_SERVICO`) e nas migrations, mas **sem endpoint de agendamento** dedicado (não existe `AppointmentController`/serviço equivalente) |
+| RF06 | Agendamento de prestadores de serviço, por porteiros e moradores | Modelado no DER (`prestadores_de_servico`) e nas migrations, mas **sem endpoint de agendamento** dedicado (não existe `AppointmentController`/serviço equivalente) |
 | RF07 | Agendamento de mudanças com aprovação do síndico (ou provisória do porteiro) | Implementado por completo — ver `MoveController`/`MoveService` e [regras de negócio](05-regras-de-negocio.md#mudanças-rf07) |
 | RF-Extra-1 | Notificar síndicos e porteiros quando uma mudança precisa de aprovação | Implementado (issue [#2](https://github.com/ricardofariasg4/edificio-ricardo/issues/2)) — `MoveService::createMove` dispara `MoveApprovalRequiredNotification` para todos os síndicos/porteiros |
 
@@ -50,7 +50,7 @@ validadas e refinadas com o retorno da equipe operacional.
 ## Papéis de usuário (atores)
 
 O sistema modela cinco tipos de usuário através do campo discriminador
-`USUARIOS.tipo_usuario`, com uma tabela específica de extensão por papel
+`usuarios.tipo_usuario`, com uma tabela específica de extensão por papel
 (ver [modelo de dados](03-modelo-de-dados.md)):
 
 - **Síndico** — aprovação definitiva de mudanças, gestão de moradores/boletos/encomendas.

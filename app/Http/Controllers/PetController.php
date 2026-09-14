@@ -33,7 +33,7 @@ class PetController extends Controller
             } else {
                 // Morador vê apenas seus próprios pets
                 $user = Auth::user();
-                $pets = $this->petService->getPetsByMorador($user->id_usuario);
+                $pets = $this->petService->getPetsByMorador($user->id);
             }
             return response()->json($pets, Response::HTTP_OK);
         } catch (\Exception $e) {

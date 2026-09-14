@@ -9,10 +9,11 @@ Regras aplicadas na camada `Services`, após validação e autorização do Cont
   `UserService::UNPAID_INVOICE_STATUS`); se houver, lança `EntityDeleteException` e
   impede a exclusão. Caso não haja pendência, os boletos do morador são apagados antes
   do próprio usuário.
-- No nível de banco, a FK `BOLETOS.id_morador → MORADORES.id_usuario` é `ON DELETE
-  RESTRICT`, então mesmo com o bug acima o banco impede a exclusão física de um
-  morador com boletos vinculados (a diferença é que o erro chega como exceção de SQL
-  não tratada, e não como a mensagem de negócio amigável pretendida).
+- No nível de banco, a FK `boletos.id_morador → moradores.usuario_id` é `ON DELETE
+  RESTRICT`, então o banco também impede a exclusão física de um morador com
+  boletos vinculados, independentemente da checagem feita em `UserService` (a
+  diferença é que o erro chegaria como exceção de SQL não tratada, e não como a
+  mensagem de negócio amigável pretendida).
 
 ## Pets (`PetService`)
 
@@ -91,7 +92,7 @@ Regra de duas etapas de aprovação:
 | `aprovado` | Porteiro | `em_andamento` (aprovação **provisória**, aguardando ratificação do síndico) |
 | `recusado` | Qualquer autorizado (Gate `approve-move`: admin/síndico/porteiro) | `recusado`, com `observacao` persistida |
 
-Em qualquer decisão, `id_autorizador` é atualizado para o `id_usuario` de quem tomou a
+Em qualquer decisão, `id_autorizador` é atualizado para o `id` (usuário) de quem tomou a
 decisão. Ao recusar, a `observacao` é normalizada (`trim`) antes de salvar; ao
 aprovar, `observacao` é sempre gravada como `null` (o campo é exclusivo do fluxo de
 recusa).

@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('VISITANTES', function (Blueprint $table) {
-            $table->unsignedInteger('id_usuario')->primary();
-            $table->unsignedInteger('visita_de');
-            $table->timestamps();
+        Schema::table('sindicos', function (Blueprint $table) {
+            $table->foreign(['usuario_id'], 'fk_sindicos_usuario_id')->references(['id'])->on('usuarios')->onUpdate('no action')->onDelete('cascade');
         });
     }
 
@@ -23,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('VISITANTES');
+        Schema::table('sindicos', function (Blueprint $table) {
+            $table->dropForeign('fk_sindicos_usuario_id');
+        });
     }
 };

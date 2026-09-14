@@ -9,28 +9,28 @@ class Morador extends Model
 {
     /** @use HasFactory<\Database\Factories\MoradorFactory> */
     use HasFactory;
-    
-    protected $table = 'MORADORES';
-    protected $primaryKey = 'id_usuario';
-    public $incrementing = false;
+
+    // Eloquent pluraliza "morador" para "moradors" (regras em inglês), por isso
+    // é necessário declarar a tabela explicitamente.
+    protected $table = 'moradores';
 
     protected $fillable = [
-        'id_usuario',
+        'usuario_id',
         'numero_apto',
     ];
 
     public function usuario()
     {
-        return $this->belongsTo(Usuario::class, 'id_usuario');
+        return $this->belongsTo(Usuario::class, 'usuario_id');
     }
 
     public function boletos()
     {
-        return $this->hasMany(Boleto::class, 'id_morador');
+        return $this->hasMany(Boleto::class, 'id_morador', 'usuario_id');
     }
 
     public function pets()
     {
-        return $this->hasMany(Pet::class, 'id_morador');
+        return $this->hasMany(Pet::class, 'id_morador', 'usuario_id');
     }
 }

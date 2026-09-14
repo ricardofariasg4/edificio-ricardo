@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('PORTEIROS', function (Blueprint $table) {
-            $table->unsignedInteger('id_usuario')->index('idx_porteiro_usuario_idusuario');
-            $table->char('turno_de_trabalho', 1);
+        Schema::create('visitantes', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('usuario_id')->unique('idx_visitantes_usuario_id');
+            $table->unsignedBigInteger('visita_de');
             $table->timestamps();
-            $table->primary(['id_usuario']);
         });
     }
 
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('PORTEIROS');
+        Schema::dropIfExists('visitantes');
     }
 };

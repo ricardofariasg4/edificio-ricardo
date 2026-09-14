@@ -14,7 +14,7 @@ return new class extends Migration
         $driver = Schema::getConnection()->getDriverName();
 
         if ($driver === 'mysql') {
-            DB::statement("ALTER TABLE `MUDANCAS` MODIFY `status` ENUM('pendente','aprovado','em_andamento','finalizado','recusado') NULL");
+            DB::statement("ALTER TABLE `mudancas` MODIFY `status` ENUM('pendente','aprovado','em_andamento','finalizado','recusado') NULL");
         }
     }
 
@@ -26,8 +26,8 @@ return new class extends Migration
         $driver = Schema::getConnection()->getDriverName();
 
         if ($driver === 'mysql') {
-            DB::table('MUDANCAS')->where('status', 'recusado')->update(['status' => 'pendente']);
-            DB::statement("ALTER TABLE `MUDANCAS` MODIFY `status` ENUM('pendente','aprovado','em_andamento','finalizado') NULL");
+            DB::table('mudancas')->where('status', 'recusado')->update(['status' => 'pendente']);
+            DB::statement("ALTER TABLE `mudancas` MODIFY `status` ENUM('pendente','aprovado','em_andamento','finalizado') NULL");
         }
     }
 };

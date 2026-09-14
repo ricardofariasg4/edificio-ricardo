@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('ENCOMENDAS', function (Blueprint $table) {
-            $table->foreign(['id_usuario'], 'fk_encomenda_usuario_usuario')->references(['id_usuario'])->on('USUARIOS')->onUpdate('no action')->onDelete('cascade');
+        Schema::table('pets', function (Blueprint $table) {
+            $table->foreign(['id_morador'], 'fk_pets_morador_usuario_id')->references(['usuario_id'])->on('moradores')->onUpdate('no action')->onDelete('cascade');
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('ENCOMENDAS', function (Blueprint $table) {
-            $table->dropForeign('fk_encomenda_usuario_usuario');
+        Schema::table('pets', function (Blueprint $table) {
+            $table->dropForeign('fk_pets_morador_usuario_id');
         });
     }
 };

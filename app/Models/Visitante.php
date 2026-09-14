@@ -11,16 +11,12 @@ class Visitante extends Model
     /** @use HasFactory<\Database\Factories\VisitanteFactory> */
     use HasFactory;
 
-    protected $table = 'VISITANTES';
-    protected $primaryKey = 'id_usuario';
-    public $incrementing = false;
-
     protected $fillable = [
-        'id_usuario',
+        'usuario_id',
     ];
 
     public function usuario(): BelongsTo
     {
-        return $this->belongsTo(Usuario::class, 'id_usuario');
+        return $this->belongsTo(Usuario::class, 'usuario_id');
     }
 }

@@ -31,7 +31,7 @@ class MoveController extends Controller
             } else {
                 // Morador vê apenas suas próprias mudanças
                 $user = Auth::user();
-                $moves = $this->moveService->getMovesByMorador($user->id_usuario);
+                $moves = $this->moveService->getMovesByMorador($user->id);
             }
             return response()->json($moves, Response::HTTP_OK);
         } catch (\Exception $e) {
@@ -104,7 +104,7 @@ class MoveController extends Controller
                 $rejectedMoves = $this->moveService->getRejectedMoves();
             } else {
                 $user = Auth::user();
-                $rejectedMoves = $this->moveService->getRejectedMovesByMorador($user->id_usuario);
+                $rejectedMoves = $this->moveService->getRejectedMovesByMorador($user->id);
             }
 
             return response()->json($rejectedMoves, Response::HTTP_OK);

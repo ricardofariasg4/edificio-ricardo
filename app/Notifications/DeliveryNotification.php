@@ -32,7 +32,7 @@ class DeliveryNotification extends Notification
             'tipo' => 'entrega',
             'aplicativo' => $this->aplicativo,
             'observacao' => $this->observacao,
-            'registrado_por' => $this->registradoPor->id_usuario,
+            'registrado_por' => $this->registradoPor->id,
             'mensagem' => "Você tem uma entrega de {$this->aplicativo} na portaria.",
         ];
     }

@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('PRESTADORES_DE_SERVICO', function (Blueprint $table) {
-            $table->unsignedInteger('id_usuario')->index('idx_prestador_usuario_idusuario');
-            $table->dateTime('data_ultimo_trabalho')->nullable();
+        Schema::create('encomendas', function (Blueprint $table) {
+            $table->id();
+            $table->string('codigo_rastreio', 45)->index('idx_encomenda_usuario_codrastreio');
+            $table->dateTime('data_recebimento');
+            $table->unsignedBigInteger('id_usuario')->index('idx_encomenda_usuario_idusuario');
             $table->timestamps();
-            $table->primary(['id_usuario']);
         });
     }
 
@@ -24,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('PRESTADORES_DE_SERVICO');
+        Schema::dropIfExists('encomendas');
     }
 };

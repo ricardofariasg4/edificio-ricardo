@@ -11,9 +11,6 @@ class Pet extends Model
     /** @use HasFactory<\Database\Factories\PetFactory> */
     use HasFactory;
 
-    protected $table = 'PETS';
-    protected $primaryKey = 'id_pet';
-
     protected $fillable = [
         'nome',
         'peso',
@@ -24,6 +21,6 @@ class Pet extends Model
 
     public function morador(): BelongsTo
     {
-        return $this->belongsTo(Morador::class, 'id_morador');
+        return $this->belongsTo(Morador::class, 'id_morador', 'usuario_id');
     }
 }

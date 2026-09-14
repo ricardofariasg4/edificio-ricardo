@@ -17,7 +17,7 @@ class SindicoFactory extends Factory
     public function definition(): array
     {
         return [
-            'id_usuario' => \App\Models\Usuario::factory()->create(['tipo_usuario' => 'sindico'])->id_usuario,
+            'usuario_id' => \App\Models\Usuario::factory()->create(['tipo_usuario' => 'sindico'])->id,
         ];
     }
 }

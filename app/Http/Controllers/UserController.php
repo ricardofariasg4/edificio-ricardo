@@ -59,9 +59,9 @@ class UserController extends Controller
         try {
             $validatedData = $request->validate([
                 'nome' => 'required|string|max:100',
-                'email' => 'required|string|email|max:255|unique:USUARIOS,email',
+                'email' => 'required|string|email|max:255|unique:usuarios,email',
                 'senha' => 'required|string|min:8',
-                'cpf' => 'required|string|max:14|unique:USUARIOS,cpf',
+                'cpf' => 'required|string|max:14|unique:usuarios,cpf',
                 'idade' => 'required|integer|min:12',
                 'tipo_usuario' => 'required|string|in:sindico,porteiro,morador,prestador,visitante'
             ]);

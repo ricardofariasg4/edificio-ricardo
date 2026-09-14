@@ -11,8 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('PETS', function (Blueprint $table) {
-            $table->foreign(['id_morador'], 'fk_pet_morador_morador')->references(['id_usuario'])->on('MORADORES')->onUpdate('no action')->onDelete('cascade');
+        Schema::create('sindicos', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('usuario_id')->unique('idx_sindicos_usuario_id');
+            $table->timestamps();
         });
     }
 
@@ -21,8 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('PETS', function (Blueprint $table) {
-            $table->dropForeign('fk_pet_morador_morador');
-        });
+        Schema::dropIfExists('sindicos');
     }
 };
