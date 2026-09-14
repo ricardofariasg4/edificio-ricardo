@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Enum\PeopleBuilding;
 use App\Models\Morador;
 use App\Models\Mudanca;
+use App\Models\Usuario;
 use App\Services\MoveService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -32,7 +34,8 @@ class MoveAutoDecisionTest extends TestCase
     public function test_mudanca_em_andamento_a_menos_de_24h_e_aprovada_automaticamente(): void
     {
         Carbon::setTestNow('2026-01-10 10:00:00');
-        $mudanca = $this->criarMudanca('em_andamento', Carbon::parse('2026-01-10 20:00:00'), idAutorizador: 1);
+        $porteiro = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::PORTEIRO]);
+        $mudanca = $this->criarMudanca('em_andamento', Carbon::parse('2026-01-10 20:00:00'), idAutorizador: $porteiro->id_usuario);
 
         $decididas = app(MoveService::class)->autoDecidePendingMoves();
 
@@ -76,7 +79,8 @@ class MoveAutoDecisionTest extends TestCase
     public function test_mudanca_ja_aprovada_nao_e_reavaliada(): void
     {
         Carbon::setTestNow('2026-01-10 10:00:00');
-        $mudanca = $this->criarMudanca('aprovado', Carbon::parse('2026-01-10 12:00:00'), idAutorizador: 1);
+        $sindico = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
+        $mudanca = $this->criarMudanca('aprovado', Carbon::parse('2026-01-10 12:00:00'), idAutorizador: $sindico->id_usuario);
 
         $decididas = app(MoveService::class)->autoDecidePendingMoves();
 

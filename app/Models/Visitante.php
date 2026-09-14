@@ -13,6 +13,7 @@ class Visitante extends Model
 
     protected $table = 'VISITANTES';
     protected $primaryKey = 'id_usuario';
+    public $incrementing = false;
 
     protected $fillable = [
         'id_usuario',

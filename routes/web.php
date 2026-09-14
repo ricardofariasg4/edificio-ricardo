@@ -9,6 +9,7 @@ use App\Http\Controllers\PackageController;
 use App\Http\Controllers\MoveController;
 use App\Http\Controllers\PetController;
 use App\Http\Controllers\LogController;
+use App\Http\Controllers\NotificationController;
 
 // Authentication routes
 Route::controller(AuthController::class)->group(function () {
@@ -86,6 +87,19 @@ Route::middleware('auth')->group(function () {
     // consultar os logs críticos registrados localmente pela aplicação.
     Route::middleware(EnsureRegistrationByAuthorized::class)->group(function () {
         Route::get('/logs', [LogController::class, 'index']);
+    });
+
+    // Notification routes (issue #2). Qualquer usuário autenticado consulta
+    // e marca como lidas as próprias notificações; disparo de notificações
+    // de entrega/manutenção é restrito a funcionários (ver Gates).
+    Route::controller(NotificationController::class)->group(function () {
+        Route::get('/notifications', 'index');
+        Route::post('/notification/{id}/read', 'markAsRead');
+
+        Route::middleware(EnsureRegistrationByAuthorized::class)->group(function () {
+            Route::post('/notifications/delivery', 'notifyDelivery');
+            Route::post('/notifications/maintenance', 'notifyMaintenance');
+        });
     });
 });
 

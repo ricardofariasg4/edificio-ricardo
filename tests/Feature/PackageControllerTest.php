@@ -24,7 +24,7 @@ class PackageControllerTest extends TestCase
         $response = $this->actingAs($sindico)->getJson('/packages');
 
         $response->assertStatus(200);
-        $this->assertCount(2, $response->json('data'));
+        $this->assertCount(2, $response->json());
     }
 
     public function test_morador_lista_apenas_suas_encomendas(): void
@@ -38,7 +38,7 @@ class PackageControllerTest extends TestCase
         $response = $this->actingAs($morador1)->getJson('/packages');
 
         $response->assertStatus(200);
-        $this->assertCount(1, $response->json('data'));
+        $this->assertCount(1, $response->json());
     }
 
     public function test_sindico_cria_encomenda(): void

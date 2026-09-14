@@ -10,10 +10,12 @@ use App\Enum\PeopleBuilding;
 class MoveService
 {
     protected MoveRepositoryInterface $moveRepository;
+    protected NotificationService $notificationService;
 
-    public function __construct(MoveRepositoryInterface $moveRepository)
+    public function __construct(MoveRepositoryInterface $moveRepository, NotificationService $notificationService)
     {
         $this->moveRepository = $moveRepository;
+        $this->notificationService = $notificationService;
     }
 
     public function getAllMoves(): array
@@ -50,7 +52,12 @@ class MoveService
     {
         // Define status inicial como pendente (RF07)
         $data['status'] = 'pendente';
-        return $this->moveRepository->create($data)->getAttributes();
+        $move = $this->moveRepository->create($data);
+
+        // RF-Extra-1: notifica síndicos e porteiros que a mudança aguarda aprovação
+        $this->notificationService->notifyMoveApprovalRequired($move);
+
+        return $move->getAttributes();
     }
 
     public function updateMove(int $id, array $data): array

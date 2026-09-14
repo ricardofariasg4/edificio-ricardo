@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enum\PeopleBuilding;
+use App\Models\Morador;
 use App\Models\Mudanca;
 use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -15,7 +16,7 @@ class MoveControllerTest extends TestCase
     public function test_sindico_aprova_mudanca_definitivamente(): void
     {
         $sindico = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
-        $morador = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::MORADOR]);
+        $morador = Morador::factory()->create();
         $move = Mudanca::factory()->create([
             'id_morador' => $morador->id_usuario,
             'status' => 'pendente',
@@ -36,7 +37,7 @@ class MoveControllerTest extends TestCase
     public function test_porteiro_aprova_mudanca_provisoriamente(): void
     {
         $porteiro = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::PORTEIRO]);
-        $morador = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::MORADOR]);
+        $morador = Morador::factory()->create();
         $move = Mudanca::factory()->create([
             'id_morador' => $morador->id_usuario,
             'status' => 'pendente',
@@ -57,7 +58,7 @@ class MoveControllerTest extends TestCase
     public function test_recusa_mudanca_com_observacao(): void
     {
         $sindico = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
-        $morador = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::MORADOR]);
+        $morador = Morador::factory()->create();
         $move = Mudanca::factory()->create([
             'id_morador' => $morador->id_usuario,
             'status' => 'pendente',
@@ -79,14 +80,14 @@ class MoveControllerTest extends TestCase
 
     public function test_morador_nao_pode_decidir_mudanca(): void
     {
-        $morador1 = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::MORADOR]);
-        $morador2 = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::MORADOR]);
+        $morador1 = Morador::factory()->create();
+        $morador2 = Morador::factory()->create();
         $move = Mudanca::factory()->create([
             'id_morador' => $morador2->id_usuario,
             'status' => 'pendente',
         ]);
 
-        $response = $this->actingAs($morador1)->postJson("/move/{$move->id_mudanca}/decision", [
+        $response = $this->actingAs($morador1->usuario)->postJson("/move/{$move->id_mudanca}/decision", [
             'decision' => 'aprovado',
         ]);
 
@@ -95,32 +96,31 @@ class MoveControllerTest extends TestCase
 
     public function test_listagem_mudancas_recusadas_morador_vee_apenas_suas(): void
     {
-        $morador1 = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::MORADOR]);
-        $morador2 = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::MORADOR]);
-        $sindico = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
+        $morador1 = Morador::factory()->create();
+        $morador2 = Morador::factory()->create();
 
         $move1 = Mudanca::factory()->create([
             'id_morador' => $morador1->id_usuario,
             'status' => 'recusado',
             'observacao' => 'Conflito de data',
         ]);
-        $move2 = Mudanca::factory()->create([
+        Mudanca::factory()->create([
             'id_morador' => $morador2->id_usuario,
             'status' => 'recusado',
             'observacao' => 'Fora do horário',
         ]);
 
-        $response = $this->actingAs($morador1)->getJson('/moves/rejected');
+        $response = $this->actingAs($morador1->usuario)->getJson('/moves/rejected');
 
         $response->assertStatus(200);
-        $this->assertCount(1, $response->json('data'));
-        $this->assertEquals($move1->id_mudanca, $response->json('data.0.id_mudanca'));
+        $this->assertCount(1, $response->json());
+        $this->assertEquals($move1->id_mudanca, $response->json('0.id_mudanca'));
     }
 
     public function test_listagem_mudancas_recusadas_sindico_vee_todas(): void
     {
-        $morador1 = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::MORADOR]);
-        $morador2 = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::MORADOR]);
+        $morador1 = Morador::factory()->create();
+        $morador2 = Morador::factory()->create();
         $sindico = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
 
         Mudanca::factory()->create([
@@ -137,12 +137,12 @@ class MoveControllerTest extends TestCase
         $response = $this->actingAs($sindico)->getJson('/moves/rejected');
 
         $response->assertStatus(200);
-        $this->assertCount(2, $response->json('data'));
+        $this->assertCount(2, $response->json());
     }
 
     public function test_listagem_mudancas_recusadas_sem_observacao_nao_aparece(): void
     {
-        $morador = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::MORADOR]);
+        $morador = Morador::factory()->create();
         $sindico = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
 
         Mudanca::factory()->create([
@@ -154,6 +154,6 @@ class MoveControllerTest extends TestCase
         $response = $this->actingAs($sindico)->getJson('/moves/rejected');
 
         $response->assertStatus(200);
-        $this->assertCount(0, $response->json('data'));
+        $this->assertCount(0, $response->json());
     }
 }

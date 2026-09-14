@@ -12,6 +12,7 @@ class Sindico extends Model
 
     protected $table = 'SINDICOS';
     protected $primaryKey = 'id_usuario';
+    public $incrementing = false;
 
     protected $fillable = [
         'id_usuario',

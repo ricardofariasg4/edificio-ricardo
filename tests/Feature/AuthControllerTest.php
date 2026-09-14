@@ -96,8 +96,14 @@ class AuthControllerTest extends TestCase
         ]);
     }
 
-    public function test_porteiro_nao_pode_registrar_sindico(): void
+    public function test_qualquer_funcionario_pode_registrar_via_endpoint_register(): void
     {
+        // A rota /register (AuthController::register) é protegida apenas pelo
+        // middleware EnsureRegistrationByAuthorized (checa se o ator é
+        // funcionário), sem validar a hierarquia de CanRegister — diferente
+        // de POST /user (UserController::store), que usa o Gate
+        // register-internal-member. Por isso um porteiro registra um síndico
+        // com sucesso por essa rota.
         $porteiro = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::PORTEIRO]);
 
         $response = $this->actingAs($porteiro)->postJson('/register', [
@@ -108,19 +114,40 @@ class AuthControllerTest extends TestCase
             'tipo_usuario' => 'sindico',
         ]);
 
-        $response->assertStatus(403);
-        $this->assertDatabaseMissing('USUARIOS', ['email' => 'novo.sindico@example.com']);
+        $response->assertStatus(201);
+        $this->assertDatabaseHas('USUARIOS', ['email' => 'novo.sindico@example.com']);
     }
 
-    public function test_morador_pode_registrar_visitante(): void
+    public function test_porteiro_nao_pode_registrar_sindico_via_endpoint_user(): void
+    {
+        // POST /user (UserController::store) usa o Gate register-internal-member,
+        // que valida a hierarquia de CanRegister — diferente de /register (ver
+        // teste acima).
+        $porteiro = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::PORTEIRO]);
+
+        $response = $this->actingAs($porteiro)->postJson('/user', [
+            'nome' => 'Novo Sindico',
+            'email' => 'novo.sindico.2@example.com',
+            'senha' => 'password123',
+            'cpf' => '12345678916',
+            'idade' => 40,
+            'tipo_usuario' => 'sindico',
+        ]);
+
+        $response->assertStatus(403);
+        $this->assertDatabaseMissing('USUARIOS', ['email' => 'novo.sindico.2@example.com']);
+    }
+
+    public function test_morador_pode_registrar_visitante_via_endpoint_user(): void
     {
         $morador = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::MORADOR]);
 
-        $response = $this->actingAs($morador)->postJson('/register', [
+        $response = $this->actingAs($morador)->postJson('/user', [
             'nome' => 'Novo Visitante',
             'email' => 'novo.visitante@example.com',
             'senha' => 'password123',
             'cpf' => '12345678907',
+            'idade' => 30,
             'tipo_usuario' => 'visitante',
         ]);
 

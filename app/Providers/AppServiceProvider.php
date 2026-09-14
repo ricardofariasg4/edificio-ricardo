@@ -45,7 +45,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('register-internal-member', function (Usuario $user, string $targetRole) {
             $userRole = CanRegister::fromPeopleBuilding($user->tipo_usuario);
             $targetRoleEnum = CanRegister::fromString($targetRole);
-            return $userRole->canRegisterInternalMember($targetRoleEnum->value);
+            return $userRole->canRegisterInternalMember($targetRoleEnum);
         });
 
         Gate::define('update-internal-member', function (Usuario $user, Request $request) {
@@ -186,6 +186,17 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::define('approve-move', function (Usuario $user) {
             // Síndico e Admin aprovam definitivamente, Porteiro aprova provisoriamente
+            return in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO]);
+        });
+
+        // Gates para Notificações
+        Gate::define('send-delivery-notification', function (Usuario $user) {
+            // RF03: notificação de entrega por aplicativo é enviada apenas por porteiros
+            return in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::PORTEIRO]);
+        });
+
+        Gate::define('send-maintenance-notification', function (Usuario $user) {
+            // RF05: manutenção predial programada, agendada por síndico/porteiro
             return in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO]);
         });
     }

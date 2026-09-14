@@ -38,7 +38,9 @@ class UserController extends Controller
     public function show(int $id)
     {
         try {
-            Gate::authorize('view-all-users');
+            // Nota: view-user já cobre "é o próprio usuário OU é funcionário
+            // (admin/síndico/porteiro)" — chamar view-all-users antes bloquearia
+            // um morador de ver o próprio perfil.
             Gate::authorize('view-user', $id);
             $response = response()->json($this->userService->listUserById($id), Response::HTTP_OK);
         } catch (AuthorizationException $e) {

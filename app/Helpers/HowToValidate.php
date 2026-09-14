@@ -99,4 +99,22 @@ class HowToValidate
             'observacao' => 'nullable|string|max:500|required_if:decision,recusado',
         ];
     }
+
+    public static function getDeliveryNotificationRules(): array
+    {
+        return [
+            'id_destinatario' => 'required|integer|exists:USUARIOS,id_usuario',
+            'aplicativo' => 'required|string|max:50',
+            'observacao' => 'nullable|string|max:255',
+        ];
+    }
+
+    public static function getMaintenanceNotificationRules(): array
+    {
+        return [
+            'titulo' => 'required|string|max:100',
+            'descricao' => 'required|string|max:500',
+            'data_agendada' => 'required|date_format:Y-m-d H:i:s|after:today',
+        ];
+    }
 }

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enum\PeopleBuilding;
 use App\Models\Boleto;
 use App\Models\Encomenda;
+use App\Models\Morador;
 use App\Models\Usuario;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -28,7 +29,7 @@ class RelationshipsTest extends TestCase
     public function test_boleto_retorna_notificador_correto(): void
     {
         $notificador = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
-        $morador = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::MORADOR]);
+        $morador = Morador::factory()->create();
 
         $boleto = Boleto::factory()->create([
             'id_morador' => $morador->id_usuario,

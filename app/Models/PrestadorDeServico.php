@@ -19,6 +19,7 @@ class PrestadorDeServico extends Model
 
     protected $table = 'PRESTADORES_DE_SERVICO';
     protected $primaryKey = 'id_usuario';
+    public $incrementing = false;
 
     protected $fillable = [
         'id_usuario',
