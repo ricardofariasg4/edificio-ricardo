@@ -8,10 +8,12 @@ use App\Models\Encomenda;
 class PackageService
 {
     protected PackageRepositoryInterface $packageRepository;
+    protected NotificationService $notificationService;
 
-    public function __construct(PackageRepositoryInterface $packageRepository)
+    public function __construct(PackageRepositoryInterface $packageRepository, NotificationService $notificationService)
     {
         $this->packageRepository = $packageRepository;
+        $this->notificationService = $notificationService;
     }
 
     public function getAllPackages(): array
@@ -31,12 +33,11 @@ class PackageService
 
     public function createPackage(array $data): array
     {
-        $package = $this->packageRepository->create($data)->getAttributes();
-        
-        // TODO: Implementar lógica de notificação aqui (RF04)
-        // NotificationService::sendPackageArrivalNotification($package['id_usuario']);
+        $package = $this->packageRepository->create($data);
 
-        return $package;
+        $this->notificationService->notifyPackageArrived($package);
+
+        return $package->getAttributes();
     }
 
     public function updatePackage(int $id, array $data): array

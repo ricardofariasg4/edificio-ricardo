@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enum\PeopleBuilding;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -11,9 +12,6 @@ class Usuario extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UsuarioFactory> */
     use HasFactory, Notifiable;
-
-    protected $table = 'USUARIOS';
-    protected $primaryKey = 'id_usuario';
 
     /**
      * The attributes that are mass assignable.
@@ -51,6 +49,7 @@ class Usuario extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'senha' => 'hashed',
+            'tipo_usuario' => PeopleBuilding::class,
         ];
     }
 
@@ -61,32 +60,32 @@ class Usuario extends Authenticatable
 
     public function sindico()
     {
-        return $this->hasOne(Sindico::class, 'id_usuario');
+        return $this->hasOne(Sindico::class, 'usuario_id');
     }
 
     public function porteiro()
     {
-        return $this->hasOne(Porteiro::class, 'id_usuario');
+        return $this->hasOne(Porteiro::class, 'usuario_id');
     }
 
     public function morador()
     {
-        return $this->hasOne(Morador::class, 'id_usuario');
+        return $this->hasOne(Morador::class, 'usuario_id');
     }
 
     public function prestadorDeServico()
     {
-        return $this->hasOne(PrestadorDeServico::class, 'id_usuario');
+        return $this->hasOne(PrestadorDeServico::class, 'usuario_id');
     }
 
     public function visitante()
     {
-        return $this->hasOne(Visitante::class, 'id_usuario');
+        return $this->hasOne(Visitante::class, 'usuario_id');
     }
 
     public function encomenda()
     {
-        return $this->hasMany(Encomenda::class, 'id_entregador');
+        return $this->hasMany(Encomenda::class, 'id_usuario');
     }
 
     // public function mudancasAutorizadas()

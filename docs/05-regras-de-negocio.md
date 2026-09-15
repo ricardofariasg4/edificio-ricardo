@@ -9,14 +9,11 @@ Regras aplicadas na camada `Services`, após validação e autorização do Cont
   `UserService::UNPAID_INVOICE_STATUS`); se houver, lança `EntityDeleteException` e
   impede a exclusão. Caso não haja pendência, os boletos do morador são apagados antes
   do próprio usuário.
-  > Esta checagem usa `$user->tipo_usuario === PeopleBuilding::MORADOR`, comparação
-  > estrita entre string e enum que **nunca é verdadeira** em PHP 8.1+ — na prática,
-  > a regra de bloqueio por inadimplência não está sendo aplicada hoje. Ver
-  > [Débitos técnicos](08-debitos-tecnicos-e-limitacoes.md).
-- No nível de banco, a FK `BOLETOS.id_morador → MORADORES.id_usuario` é `ON DELETE
-  RESTRICT`, então mesmo com o bug acima o banco impede a exclusão física de um
-  morador com boletos vinculados (a diferença é que o erro chega como exceção de SQL
-  não tratada, e não como a mensagem de negócio amigável pretendida).
+- No nível de banco, a FK `boletos.id_morador → moradores.usuario_id` é `ON DELETE
+  RESTRICT`, então o banco também impede a exclusão física de um morador com
+  boletos vinculados, independentemente da checagem feita em `UserService` (a
+  diferença é que o erro chegaria como exceção de SQL não tratada, e não como a
+  mensagem de negócio amigável pretendida).
 
 ## Pets (`PetService`)
 
@@ -39,8 +36,35 @@ Regras aplicadas na camada `Services`, após validação e autorização do Cont
 ## Encomendas (`PackageService`)
 
 - Cadastro simples de encomenda (`codigo_rastreio`, `data_recebimento`, destinatário).
-- **Notificação pendente (RF04)**: o método `createPackage` tem um `TODO` explícito
-  indicando que o disparo de notificação ao morador ainda não foi implementado.
+- **Notificação automática (RF04)**: `createPackage` dispara `PackageArrivedNotification`
+  para o `id_usuario` destinatário logo após persistir a encomenda (issue
+  [#2](https://github.com/ricardofariasg4/edificio-ricardo/issues/2)).
+
+## Notificações (`NotificationService`) — issue #2
+
+Usa o mecanismo nativo `Illuminate\Notifications` do Laravel (canal `database`,
+síncrono — sem fila). `Usuario` já usa o trait `Notifiable`.
+
+- **RF03 — entrega por aplicativo**: `notifyDelivery` envia `DeliveryNotification`
+  a um único destinatário (morador/visitante). Disparado por
+  `POST /notifications/delivery`, restrito ao Gate `send-delivery-notification`
+  (apenas porteiro/admin, conforme o requisito original).
+- **RF04 — encomenda recebida**: `notifyPackageArrived` envia
+  `PackageArrivedNotification` ao destinatário da encomenda; chamado
+  automaticamente por `PackageService::createPackage` (ver acima).
+- **RF05 — manutenção predial programada**: `notifyMaintenanceScheduled` envia
+  `MaintenanceScheduledNotification` para **todos** os usuários com
+  `tipo_usuario = morador`. Disparado por `POST /notifications/maintenance`,
+  restrito ao Gate `send-maintenance-notification` (síndico/porteiro/admin).
+- **RF-Extra-1 — mudança aguardando aprovação**: `notifyMoveApprovalRequired` envia
+  `MoveApprovalRequiredNotification` para **todos** os usuários com
+  `tipo_usuario` em `sindico`/`porteiro`; chamado automaticamente por
+  `MoveService::createMove` sempre que uma mudança é agendada.
+- **Consulta**: `GET /notifications` lista as notificações do usuário autenticado
+  (mais recentes primeiro, paginadas, com contagem de não lidas em `meta.unread_count`);
+  `POST /notification/{id}/read` marca uma notificação específica como lida. Ambos
+  exigem apenas sessão autenticada — cada usuário só enxerga as próprias
+  notificações (`$user->notifications()`, escopado pelo relacionamento polimórfico).
 
 ## Mudanças (`MoveService`) — RF07
 
@@ -48,7 +72,10 @@ Fluxo central do sistema, cobrindo o requisito RF07 do levantamento original.
 
 ### Criação
 `createMove` força `status = 'pendente'` na criação, **independente do valor enviado
-no payload** — uma mudança nunca nasce já aprovada.
+no payload** — uma mudança nunca nasce já aprovada. Em seguida (RF-Extra-1, issue
+[#2](https://github.com/ricardofariasg4/edificio-ricardo/issues/2)), notifica todos
+os síndicos e porteiros de que há uma mudança aguardando decisão — ver
+[Notificações](#notificações-notificationservice--issue-2).
 
 ### Decisão (`makeDecision`)
 
@@ -65,7 +92,7 @@ Regra de duas etapas de aprovação:
 | `aprovado` | Porteiro | `em_andamento` (aprovação **provisória**, aguardando ratificação do síndico) |
 | `recusado` | Qualquer autorizado (Gate `approve-move`: admin/síndico/porteiro) | `recusado`, com `observacao` persistida |
 
-Em qualquer decisão, `id_autorizador` é atualizado para o `id_usuario` de quem tomou a
+Em qualquer decisão, `id_autorizador` é atualizado para o `id` (usuário) de quem tomou a
 decisão. Ao recusar, a `observacao` é normalizada (`trim`) antes de salvar; ao
 aprovar, `observacao` é sempre gravada como `null` (o campo é exclusivo do fluxo de
 recusa).
@@ -89,3 +116,48 @@ com `status = 'pendente'`.
 `501 Not Implemented`, com a mensagem indicando que o fluxo de decisão deve ser usado.
 Isso é intencional: uma mudança não deve ser editada/apagada diretamente, apenas
 avançar pelo fluxo pendente → decisão.
+
+### Decisão automática por ausência de aprovação (`autoDecidePendingMoves`) — issue #5
+
+Cobre o caso do síndico não decidir a tempo. Executado pelo comando
+`php artisan moves:auto-decide` (agendado de hora em hora via `Schedule::command`
+em `routes/console.php` — depende de um cron rodando `schedule:run` no ambiente,
+o que ainda não está configurado no `docker-compose.yml`), avalia toda mudança com
+`data` a 24h ou menos do acontecimento que ainda esteja `pendente` ou `em_andamento`:
+
+| Status antes | Condição | Status depois |
+|---|---|---|
+| `em_andamento` (aprovação provisória do porteiro) | sem ratificação do síndico até 24h antes | `aprovado` (ratificação automática) |
+| `pendente` (nenhuma aprovação) | sem nenhuma decisão até 24h antes | `recusado`, com `observacao = 'Ausência de aprovação'` |
+
+Mudanças já `aprovado`/`recusado`, ou com `data` a mais de 24h de distância, não são
+tocadas.
+
+## Reservas de ambientes (`ReservaService`) — issue #9
+
+Catálogo de ambientes comuns (`AmbienteService`/`AmbienteController`, CRUD
+restrito ao Gate `manage-ambientes` — síndico/admin) e reservas desses ambientes
+por data, com fila de espera automática.
+
+- **Consulta de disponibilidade**: `GET /ambiente/{id}/disponibilidade` (qualquer
+  autenticado) retorna as datas com reserva `confirmada` daquele ambiente
+  (opcionalmente filtradas por `?mes=YYYY-MM`), para o cliente calcular as datas
+  livres por exclusão.
+- **Solicitação de reserva** (`createReservation`, `POST /reserva`): se não houver
+  reserva `confirmada` para aquele `id_ambiente`+`data`, a nova reserva já nasce
+  `confirmada`. Se já houver, a nova reserva entra na fila de espera
+  (`status=fila_espera`) com `posicao_fila` sequencial (1, 2, 3...). Um mesmo
+  usuário não pode ter duas solicitações ativas (`confirmada` ou `fila_espera`)
+  para o mesmo ambiente+data — a segunda tentativa é rejeitada com
+  `EntityCreateException`.
+- **Cancelamento e promoção automática da fila** (`cancelReservation`,
+  `DELETE /reserva/{id}`, Gate `cancel-reserva`: dono da reserva ou
+  admin/síndico/porteiro): a reserva é marcada `cancelada`. Se ela estava
+  `confirmada`, o próximo da fila para aquele ambiente+data (menor
+  `posicao_fila`) é promovido automaticamente para `confirmada`
+  (`posicao_fila` volta a `null`) e recebe uma notificação
+  (`ReservationPromotedNotification`, reaproveitando o sistema de notificações
+  da issue [#2](https://github.com/ricardofariasg4/edificio-ricardo/issues/2)).
+  Se não houver ninguém na fila, o cancelamento não tem efeito colateral.
+- **Listagem** (`GET /reservas`): morador vê apenas as próprias reservas;
+  admin/síndico/porteiro veem todas (Gate `view-all-reservas`).

@@ -9,17 +9,14 @@ class Porteiro extends Model
 {
     /** @use HasFactory<\Database\Factories\PorteiroFactory> */
     use HasFactory;
-    
-    protected $table = 'PORTEIROS';
-    protected $primaryKey = 'id_usuario';
 
     protected $fillable = [
-        'id_usuario',
+        'usuario_id',
         'turno_de_trabalho',
     ];
 
     public function usuario()
     {
-        return $this->belongsTo(Usuario::class, 'id_usuario');
+        return $this->belongsTo(Usuario::class, 'usuario_id');
     }
 }

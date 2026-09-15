@@ -10,10 +10,12 @@ use App\Enum\PeopleBuilding;
 class MoveService
 {
     protected MoveRepositoryInterface $moveRepository;
+    protected NotificationService $notificationService;
 
-    public function __construct(MoveRepositoryInterface $moveRepository)
+    public function __construct(MoveRepositoryInterface $moveRepository, NotificationService $notificationService)
     {
         $this->moveRepository = $moveRepository;
+        $this->notificationService = $notificationService;
     }
 
     public function getAllMoves(): array
@@ -50,7 +52,12 @@ class MoveService
     {
         // Define status inicial como pendente (RF07)
         $data['status'] = 'pendente';
-        return $this->moveRepository->create($data)->getAttributes();
+        $move = $this->moveRepository->create($data);
+
+        // RF-Extra-1: notifica síndicos e porteiros que a mudança aguarda aprovação
+        $this->notificationService->notifyMoveApprovalRequired($move);
+
+        return $move->getAttributes();
     }
 
     public function updateMove(int $id, array $data): array
@@ -61,6 +68,31 @@ class MoveService
     public function deleteMove(int $id): bool
     {
         return $this->moveRepository->delete($id);
+    }
+
+    /**
+     * Aprova ou recusa automaticamente mudanças que continuam sem decisão
+     * definitiva do síndico/admin a menos de 24h do acontecimento:
+     * - 'em_andamento' (já com aprovação provisória do porteiro) vira 'aprovado';
+     * - 'pendente' (sem nenhuma aprovação) vira 'recusado', com observação padrão.
+     *
+     * @return array Lista das mudanças decididas automaticamente.
+     */
+    public function autoDecidePendingMoves(): array
+    {
+        $threshold = now()->addHours(24);
+        $dueMoves = $this->moveRepository->findDueForAutoDecision($threshold);
+
+        $decided = [];
+        foreach ($dueMoves as $move) {
+            $data = $move->status === 'em_andamento'
+                ? ['status' => 'aprovado', 'observacao' => null]
+                : ['status' => 'recusado', 'observacao' => 'Ausência de aprovação'];
+
+            $decided[] = $this->moveRepository->update($move->id, $data)->getAttributes();
+        }
+
+        return $decided;
     }
 
     public function makeDecision(int $id, string $decision, Usuario $autorizador, ?string $observacao = null): array
@@ -83,7 +115,7 @@ class MoveService
 
         $data = [
             'status' => $newStatus,
-            'id_autorizador' => $autorizador->id_usuario,
+            'id_autorizador' => $autorizador->id,
             'observacao' => $decision === 'recusado' ? $normalizedObservation : null,
         ];
 

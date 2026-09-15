@@ -13,6 +13,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Symfony\Component\HttpFoundation\Response;
 use App\Exceptions\EntityNotFoundException;
 use App\Exceptions\EntityCreateException;
+use App\Exceptions\EntityUpdateException;
 
 class PetController extends Controller
 {
@@ -32,14 +33,11 @@ class PetController extends Controller
             } else {
                 // Morador vê apenas seus próprios pets
                 $user = Auth::user();
-                $pets = $this->petService->getPetsByMorador($user->id_usuario);
+                $pets = $this->petService->getPetsByMorador($user->id);
             }
             return response()->json($pets, Response::HTTP_OK);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro ao listar pets',
-                'details' => $e->getMessage()
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->logCriticalAndRespond($e, 'Erro ao listar pets', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -55,10 +53,7 @@ class PetController extends Controller
                 'details' => 'Você não tem permissão para visualizar este pet.'
             ], Response::HTTP_FORBIDDEN);
         } catch (EntityNotFoundException $e) {
-            return response()->json([
-                'error' => 'Pet não encontrado',
-                'details' => $e->getMessage()
-            ], Response::HTTP_NOT_FOUND);
+            return $this->logCriticalAndRespond($e, 'Pet não encontrado', Response::HTTP_NOT_FOUND);
         }
     }
 
@@ -84,10 +79,7 @@ class PetController extends Controller
                 'details' => 'Você não tem permissão para cadastrar pets para este morador.'
             ], Response::HTTP_FORBIDDEN);
         } catch (EntityCreateException $e) {
-            return response()->json([
-                'error' => 'Erro ao cadastrar pet',
-                'details' => $e->getMessage()
-            ], Response::HTTP_BAD_REQUEST);
+            return $this->logCriticalAndRespond($e, 'Erro ao cadastrar pet', Response::HTTP_BAD_REQUEST);
         }
     }
 
@@ -116,10 +108,9 @@ class PetController extends Controller
                 'details' => 'Você não tem permissão para atualizar este pet.'
             ], Response::HTTP_FORBIDDEN);
         } catch (EntityNotFoundException $e) {
-            return response()->json([
-                'error' => 'Pet não encontrado',
-                'details' => $e->getMessage()
-            ], Response::HTTP_NOT_FOUND);
+            return $this->logCriticalAndRespond($e, 'Pet não encontrado', Response::HTTP_NOT_FOUND);
+        } catch (EntityUpdateException $e) {
+            return $this->logCriticalAndRespond($e, 'Erro ao atualizar pet', Response::HTTP_BAD_REQUEST);
         }
     }
 
@@ -140,10 +131,7 @@ class PetController extends Controller
                 'details' => 'Você não tem permissão para deletar este pet.'
             ], Response::HTTP_FORBIDDEN);
         } catch (EntityNotFoundException $e) {
-            return response()->json([
-                'error' => 'Pet não encontrado',
-                'details' => $e->getMessage()
-            ], Response::HTTP_NOT_FOUND);
+            return $this->logCriticalAndRespond($e, 'Pet não encontrado', Response::HTTP_NOT_FOUND);
         }
     }
 }

@@ -38,7 +38,9 @@ class UserController extends Controller
     public function show(int $id)
     {
         try {
-            Gate::authorize('view-all-users');
+            // Nota: view-user já cobre "é o próprio usuário OU é funcionário
+            // (admin/síndico/porteiro)" — chamar view-all-users antes bloquearia
+            // um morador de ver o próprio perfil.
             Gate::authorize('view-user', $id);
             $response = response()->json($this->userService->listUserById($id), Response::HTTP_OK);
         } catch (AuthorizationException $e) {
@@ -57,9 +59,9 @@ class UserController extends Controller
         try {
             $validatedData = $request->validate([
                 'nome' => 'required|string|max:100',
-                'email' => 'required|string|email|max:255|unique:USUARIOS,email',
+                'email' => 'required|string|email|max:255|unique:usuarios,email',
                 'senha' => 'required|string|min:8',
-                'cpf' => 'required|string|max:14|unique:USUARIOS,cpf',
+                'cpf' => 'required|string|max:14|unique:usuarios,cpf',
                 'idade' => 'required|integer|min:12',
                 'tipo_usuario' => 'required|string|in:sindico,porteiro,morador,prestador,visitante'
             ]);

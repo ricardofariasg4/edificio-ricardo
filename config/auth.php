@@ -15,7 +15,7 @@ return [
 
     'defaults' => [
         'guard' => env('AUTH_GUARD', 'web'),
-        'passwords' => env('AUTH_PASSWORD_BROKER', 'USUARIOS'),
+        'passwords' => env('AUTH_PASSWORD_BROKER', 'usuarios'),
     ],
 
     /*
@@ -38,7 +38,7 @@ return [
     'guards' => [
         'web' => [
             'driver' => 'session',
-            'provider' => 'USUARIOS',
+            'provider' => 'usuarios',
         ],
     ],
 
@@ -60,14 +60,14 @@ return [
     */
 
     'providers' => [
-        'USUARIOS' => [
+        'usuarios' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\Usuario::class),
         ],
 
-        // 'USUARIOS' => [
+        // 'usuarios' => [
         //     'driver' => 'database',
-        //     'table' => 'USUARIOS',
+        //     'table' => 'usuarios',
         // ],
     ],
 
@@ -91,8 +91,8 @@ return [
     */
 
     'passwords' => [
-        'USUARIOS' => [
-            'provider' => 'USUARIOS',
+        'usuarios' => [
+            'provider' => 'usuarios',
             'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
             'expire' => 60,
             'throttle' => 60,

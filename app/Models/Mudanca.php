@@ -11,9 +11,6 @@ class Mudanca extends Model
     /** @use HasFactory<\Database\Factories\MudancaFactory> */
     use HasFactory;
 
-    protected $table = 'MUDANCAS';
-    protected $primaryKey = 'id_mudanca';
-
     protected $fillable = [
         'data',
         'id_morador',
@@ -29,6 +26,6 @@ class Mudanca extends Model
 
     public function pertenceAoMorador(): BelongsTo
     {
-        return $this->belongsTo(Morador::class, 'id_morador');
+        return $this->belongsTo(Morador::class, 'id_morador', 'usuario_id');
     }
 }

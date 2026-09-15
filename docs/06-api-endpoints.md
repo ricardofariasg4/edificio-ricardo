@@ -69,6 +69,53 @@ respostas são sempre JSON. Todas as rotas abaixo, exceto as marcadas como
 | PUT | `/pet/{id}` | `PetController@update` | `update-pet` |
 | DELETE | `/pet/{id}` | `PetController@destroy` | `delete-pet` |
 
+## Logs
+
+| Método | Rota | Controller@action | Middleware extra | Descrição |
+|---|---|---|---|---|
+| GET | `/logs` | `LogController@index` | `EnsureRegistrationByAuthorized` | Lista os logs críticos registrados localmente (issue #7), paginados (`?page=`, `?per_page=`), mais recentes primeiro |
+
+> Endpoint entregue na issue
+> [#7](https://github.com/ricardofariasg4/edificio-ricardo/issues/7). Detalhes do
+> mecanismo de logging em
+> [Infraestrutura e ambiente](07-infraestrutura-e-ambiente.md#logging).
+
+## Notificações
+
+| Método | Rota | Controller@action | Middleware extra | Gate/Descrição |
+|---|---|---|---|---|
+| GET | `/notifications` | `NotificationController@index` | — | Lista as notificações do usuário autenticado, paginadas (`?page=`, `?per_page=`), mais recentes primeiro |
+| POST | `/notification/{id}/read` | `NotificationController@markAsRead` | — | Marca uma notificação (própria) como lida |
+| POST | `/notifications/delivery` | `NotificationController@notifyDelivery` | `EnsureRegistrationByAuthorized` | `send-delivery-notification` (RF03 — apenas porteiro/admin) |
+| POST | `/notifications/maintenance` | `NotificationController@notifyMaintenance` | `EnsureRegistrationByAuthorized` | `send-maintenance-notification` (RF05 — síndico/porteiro/admin) |
+
+> Endpoints entregues na issue
+> [#2](https://github.com/ricardofariasg4/edificio-ricardo/issues/2). Regras completas
+> em [Regras de negócio](05-regras-de-negocio.md#notificações-notificationservice--issue-2).
+> `POST /notifications/delivery` e `POST /notifications/maintenance` não persistem
+> uma entidade própria — apenas disparam a notificação (`201 Created` na resposta é
+> semântico, não indica um recurso consultável por id). RF04 (encomenda) e
+> RF-Extra-1 (mudança) são notificados automaticamente por seus respectivos fluxos
+> de criação, sem endpoint dedicado.
+
+## Ambientes e reservas
+
+| Método | Rota | Controller@action | Middleware extra | Gate/Descrição |
+|---|---|---|---|---|
+| GET | `/ambientes` | `AmbienteController@index` | — | Lista o catálogo de ambientes comuns — qualquer autenticado |
+| GET | `/ambiente/{id}/disponibilidade` | `AmbienteController@disponibilidade` | — | Datas com reserva confirmada daquele ambiente (`?mes=YYYY-MM` opcional) |
+| POST | `/ambiente` | `AmbienteController@store` | — | `manage-ambientes` (síndico/admin) |
+| PUT | `/ambiente/{id}` | `AmbienteController@update` | — | `manage-ambientes` |
+| DELETE | `/ambiente/{id}` | `AmbienteController@destroy` | — | `manage-ambientes` |
+| GET | `/reservas` | `ReservaController@index` | — | `view-all-reservas` (ou lista as próprias) |
+| POST | `/reserva` | `ReservaController@store` | — | Qualquer autenticado — confirma na hora se a data estiver livre, senão entra na fila de espera |
+| DELETE | `/reserva/{id}` | `ReservaController@destroy` | — | `cancel-reserva` (dono ou admin/síndico/porteiro) — promove o próximo da fila automaticamente |
+
+> Endpoints entregues na issue
+> [#9](https://github.com/ricardofariasg4/edificio-ricardo/issues/9). Regras
+> completas em
+> [Regras de negócio](05-regras-de-negocio.md#reservas-de-ambientes-reservaservice--issue-9).
+
 ## Diversos
 
 | Método | Rota | Descrição |

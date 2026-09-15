@@ -10,23 +10,18 @@ class PrestadorDeServico extends Model
     /** @use HasFactory<\Database\Factories\PrestadorDeServicoFactory> */
     use HasFactory;
 
-    // Schema::create('PRESTADORES_DE_SERVICO', function (Blueprint $table) {
-    //     $table->unsignedInteger('id_usuario')->index('idx_prestador_usuario_idusuario');
-    //     $table->dateTime('data_ultimo_trabalho')->nullable();
-    //     $table->timestamps();
-    //     $table->primary(['id_usuario']);
-    // });
-
-    protected $table = 'PRESTADORES_DE_SERVICO';
-    protected $primaryKey = 'id_usuario';
+    // Eloquent pluraliza "prestador_de_servico" para "prestador_de_servicos"
+    // (pluraliza só a última palavra), por isso é necessário declarar a tabela
+    // explicitamente.
+    protected $table = 'prestadores_de_servico';
 
     protected $fillable = [
-        'id_usuario',
+        'usuario_id',
         'data_ultimo_trabalho',
     ];
 
     public function usuario()
     {
-        return $this->belongsTo(Usuario::class, 'id_usuario');
+        return $this->belongsTo(Usuario::class, 'usuario_id');
     }
 }

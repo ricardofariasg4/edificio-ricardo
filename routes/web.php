@@ -8,6 +8,10 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\MoveController;
 use App\Http\Controllers\PetController;
+use App\Http\Controllers\LogController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\AmbienteController;
+use App\Http\Controllers\ReservaController;
 
 // Authentication routes
 Route::controller(AuthController::class)->group(function () {
@@ -79,6 +83,44 @@ Route::middleware('auth')->group(function () {
         Route::post('/pet', 'store');
         Route::put('/pet/{id}', 'update');
         Route::delete('/pet/{id}', 'destroy');
+    });
+
+    // Log management routes (issue #7). Apenas funcionários autorizados podem
+    // consultar os logs críticos registrados localmente pela aplicação.
+    Route::middleware(EnsureRegistrationByAuthorized::class)->group(function () {
+        Route::get('/logs', [LogController::class, 'index']);
+    });
+
+    // Notification routes (issue #2). Qualquer usuário autenticado consulta
+    // e marca como lidas as próprias notificações; disparo de notificações
+    // de entrega/manutenção é restrito a funcionários (ver Gates).
+    Route::controller(NotificationController::class)->group(function () {
+        Route::get('/notifications', 'index');
+        Route::post('/notification/{id}/read', 'markAsRead');
+
+        Route::middleware(EnsureRegistrationByAuthorized::class)->group(function () {
+            Route::post('/notifications/delivery', 'notifyDelivery');
+            Route::post('/notifications/maintenance', 'notifyMaintenance');
+        });
+    });
+
+    // Ambientes comuns e reservas (issue #9). Qualquer autenticado consulta o
+    // catálogo e a disponibilidade; gestão do catálogo é restrita a
+    // síndico/admin (Gate manage-ambientes). Reservas: qualquer autenticado
+    // solicita/cancela a própria (ou qualquer uma, se funcionário — Gates
+    // view-all-reservas/cancel-reserva).
+    Route::controller(AmbienteController::class)->group(function () {
+        Route::get('/ambientes', 'index');
+        Route::get('/ambiente/{id}/disponibilidade', 'disponibilidade');
+        Route::post('/ambiente', 'store');
+        Route::put('/ambiente/{id}', 'update');
+        Route::delete('/ambiente/{id}', 'destroy');
+    });
+
+    Route::controller(ReservaController::class)->group(function () {
+        Route::get('/reservas', 'index');
+        Route::post('/reserva', 'store');
+        Route::delete('/reserva/{id}', 'destroy');
     });
 });
 

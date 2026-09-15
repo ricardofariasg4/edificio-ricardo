@@ -17,8 +17,8 @@ class VisitanteFactory extends Factory
     public function definition(): array
     {
         return [
-            'id_usuario' => \App\Models\Usuario::factory()->create(['tipo_usuario' => 'visitante'])->id_usuario,
-            'visita_de' => \App\Models\Morador::inRandomOrder()->value('id_usuario'),
+            'usuario_id' => \App\Models\Usuario::factory()->create(['tipo_usuario' => 'visitante'])->id,
+            'visita_de' => \App\Models\Morador::inRandomOrder()->value('usuario_id'),
         ];
     }
 }

@@ -40,26 +40,91 @@ usuário `edificio_user`, senha `secret` por padrão) sobrescrevem o `.env` loca
 
 ## Integrações externas
 
-**Não há integrações externas ativas no momento.** O projeto foi desenhado para
-integrar com serviços de notificação de aplicativos de entrega (RF03) e para envio de
-notificações em tempo real (RNF03), mas:
+**Não há integrações externas ativas no momento.**
 
 - Não existe client HTTP configurado para APIs de terceiros (ifood, rappi,
-  Correios/Mercado Livre para rastreio, etc.).
+  Correios/Mercado Livre para rastreio, etc.) — o sistema de notificações (RF03/RF04)
+  registra a notificação internamente quando um funcionário informa a chegada de uma
+  entrega/encomenda pela API; não há webhook/integração recebendo eventos desses
+  serviços automaticamente.
 - Não há broadcasting configurado (`BROADCAST_CONNECTION=log`) para eventos em tempo
-  real.
+  real — ver [Notificações](#notificações) abaixo quanto ao impacto no RNF03.
 - `laravel/sanctum` está instalado (útil para uma futura API consumida por um SPA/app
   mobile), mas nenhuma rota usa tokens Sanctum hoje — a autenticação é 100% por
   sessão.
 - `AWS_*` no `.env.example` são apenas o boilerplate padrão do Laravel para o driver
   de storage `s3`; não há uso de S3 configurado no código.
 
+## Notificações
+
+Issue [#2](https://github.com/ricardofariasg4/edificio-ricardo/issues/2): usa o
+mecanismo nativo `Illuminate\Notifications` do Laravel, canal `database`.
+
+- **Migration `notifications`** (`database/migrations/..._create_notifications_table.php`):
+  schema polimórfico padrão do Laravel (`notifiable_type`/`notifiable_id`, `data` JSON,
+  `read_at`). `Usuario` já usa o trait `Notifiable`.
+- **Classes de notificação** (`app/Notifications/`): `DeliveryNotification` (RF03),
+  `PackageArrivedNotification` (RF04), `MaintenanceScheduledNotification` (RF05),
+  `MoveApprovalRequiredNotification` (RF-Extra-1) — todas `via(): ['database']`, sem
+  `ShouldQueue`, então são persistidas de forma síncrona dentro da própria requisição.
+- **`NotificationService`** (`app/Services/NotificationService.php`): centraliza o
+  disparo (`notifyDelivery`, `notifyPackageArrived`, `notifyMaintenanceScheduled`,
+  `notifyMoveApprovalRequired`) e a consulta (`listForUser`, `markAsRead`). Detalhes
+  de regras de negócio em [Regras de negócio](05-regras-de-negocio.md#notificações-notificationservice--issue-2)
+  e endpoints em [API endpoints](06-api-endpoints.md#notificações).
+- **RNF03 (notificar em até 5s)**: como o envio é síncrono e local (sem chamada de
+  rede externa), a gravação em si é efetivamente instantânea. O requisito não é
+  atendido no sentido de "push em tempo real" — não há broadcasting/WebSocket — o
+  destinatário só vê a notificação ao consultar `GET /notifications`.
+
+## Logging
+
+Issue [#7](https://github.com/ricardofariasg4/edificio-ricardo/issues/7): a aplicação
+não possui (nem precisa, por ora) de um serviço externo de centralização de logs
+(Bugsnag, Graylog etc.), então o registro de erros críticos é feito localmente, em
+formato consultável:
+
+- **Canal `critical`** (`config/logging.php`): usa o driver `single` do Monolog,
+  gravando em `storage/logs/critical.log`, mas com o formatter trocado para
+  `Monolog\Formatter\JsonFormatter` via um "tap" (`app/Logging/JsonLineFormatter.php`)
+  — cada entrada vira uma linha JSON independente, evitando parsing frágil de texto
+  ao ler o arquivo de volta.
+- **`Controller::logCriticalAndRespond()`** (`app/Http/Controllers/Controller.php`):
+  helper usado pelos catches já existentes nos controllers (Move/Pet/Invoice/Package)
+  para registrar o detalhe técnico da exceção (classe, mensagem, arquivo, linha) nesse
+  canal e devolver ao cliente **apenas** a mensagem de negócio já curada (ex.: "Boleto
+  não encontrado"), sem vazar a mensagem crua da exceção — esse era exatamente o
+  problema relatado na issue ("alguns logs críticos são devolvidos para o usuário").
+- **Rede de segurança global** (`bootstrap/app.php`, `withExceptions`): qualquer
+  exceção que escape sem passar por um `try/catch` de controller (ex.:
+  `EntityDeleteException` não capturada em `UserController::destroy`) também é
+  registrada no canal `critical` (`reportable`) e, para requisições JSON, nunca
+  renderiza mensagem/stack trace crus ao cliente — mesmo com `APP_DEBUG=true` — devolvendo
+  uma mensagem genérica (`renderable`). Erros de validação, autorização e exceções
+  HTTP "normais" do Symfony (404 de rota etc.) seguem o comportamento padrão do
+  Laravel, que já não vaza detalhes sensíveis nesses casos.
+- **`GET /logs`** (`LogController` + `LogService`): lê `critical.log`, devolve as
+  entradas mais recentes primeiro, paginadas (`?page=`, `?per_page=`). Restrito a
+  funcionários autenticados via `EnsureRegistrationByAuthorized`, satisfazendo o
+  requisito de autenticação da issue.
+
+Não há rotação/retention automática desse arquivo (driver `single`, não `daily`) —
+suficiente para o volume atual do projeto; considerar rotação diária caso o arquivo
+cresça muito.
+
 ## Testes
 
 - `phpunit.xml` usa SQLite em memória para o ambiente de teste (diferente do MySQL
-  usado em desenvolvimento/produção).
-- Cobertura atual: apenas os testes de exemplo gerados pelo scaffold do Laravel
-  (`tests/Feature/ExampleTest.php` — checa que `GET /` retorna 200 —, e
-  `tests/Unit/ExampleTest.php` — asserção trivial). **Não há testes automatizados**
-  cobrindo Controllers, Services, Repositories, Gates ou o fluxo de mudanças. Ver
-  [Débitos técnicos](08-debitos-tecnicos-e-limitacoes.md#ausência-de-testes-automatizados).
+  usado em desenvolvimento/produção). A imagem `php:8.3-cli` "pura" já traz
+  `pdo_sqlite` habilitado por padrão, mas `docker/Dockerfile` (usado em
+  desenvolvimento) não instala essa extensão explicitamente — rodar os testes dentro
+  do container de desenvolvimento do projeto pode exigir adicioná-la ao Dockerfile.
+  A suíte completa também foi validada rodando contra MySQL real (subindo os
+  containers do `docker-compose.yml` e trocando `DB_CONNECTION`), o que revelou
+  bugs que o SQLite in-memory mascarava por não impor FK constraints da mesma forma
+  — ver [débitos técnicos](08-debitos-tecnicos-e-limitacoes.md).
+- Cobertura atual (87 testes de Feature, todos passando): `AuthControllerTest`,
+  `PetControllerTest`, `MoveAutoDecisionTest`, `MoveControllerTest`,
+  `InvoiceControllerTest`, `PackageControllerTest`, `UserControllerTest`,
+  `RelationshipsTest`, `LogControllerTest`, `GlobalExceptionHandlingTest` e
+  `NotificationControllerTest`, além dos exemplos padrão do scaffold do Laravel.

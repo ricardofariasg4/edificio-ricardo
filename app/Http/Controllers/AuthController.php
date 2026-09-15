@@ -7,6 +7,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Usuario;
 use App\Helpers\CpfExtractor;
+use App\Helpers\HowToValidate;
 use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
@@ -19,9 +20,10 @@ class AuthController extends Controller
             
             $request->validate([
                 'nome' => 'required|string|max:100',
-                'email' => 'required|string|email|max:255|unique:USUARIOS,email',
+                'email' => 'required|string|email|max:255|unique:usuarios,email',
                 'senha' => 'required|string|min:8',
-                'cpf' => 'required|string|max:14|unique:USUARIOS,cpf',
+                'cpf' => 'required|string|max:14|unique:usuarios,cpf',
+                'tipo_usuario' => HowToValidate::getRuleByField('tipo_usuario'),
             ]);
         } catch (ValidationException $e) {
             return response()->json([
@@ -34,6 +36,7 @@ class AuthController extends Controller
             'email' => $request->email,
             'senha' => Hash::make($request->senha),
             'cpf' => CpfExtractor::extractNumbers($request->cpf),
+            'tipo_usuario' => $request->tipo_usuario,
         ]);
         
         return response()->json([

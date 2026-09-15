@@ -10,15 +10,12 @@ class Sindico extends Model
     /** @use HasFactory<\Database\Factories\SindicoFactory> */
     use HasFactory;
 
-    protected $table = 'SINDICOS';
-    protected $primaryKey = 'id_usuario';
-
     protected $fillable = [
-        'id_usuario',
+        'usuario_id',
     ];
 
     public function usuario()
     {
-        return $this->belongsTo(Usuario::class, 'id_usuario');
+        return $this->belongsTo(Usuario::class, 'usuario_id');
     }
 }

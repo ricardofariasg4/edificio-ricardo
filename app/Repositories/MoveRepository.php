@@ -41,4 +41,13 @@ class MoveRepository extends BaseRepository implements MoveRepositoryInterface
             ->get()
             ->all();
     }
+
+    public function findDueForAutoDecision(\DateTimeInterface $threshold): array
+    {
+        return $this->model
+            ->whereIn('status', ['pendente', 'em_andamento'])
+            ->where('data', '<=', $threshold)
+            ->get()
+            ->all();
+    }
 }

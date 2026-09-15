@@ -33,4 +33,14 @@ interface MoveRepositoryInterface extends RepositoryInterface
      * @return array
      */
     public function findRejectedByMorador(int $idMorador): array;
+
+    /**
+     * Busca mudanças pendentes ou em andamento cuja data de acontecimento já é
+     * menor ou igual a $threshold (ex.: agora + 24h), ou seja, sem decisão
+     * definitiva do síndico a menos de 24h do acontecimento.
+     *
+     * @param \DateTimeInterface $threshold
+     * @return array
+     */
+    public function findDueForAutoDecision(\DateTimeInterface $threshold): array;
 }

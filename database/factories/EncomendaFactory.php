@@ -19,7 +19,7 @@ class EncomendaFactory extends Factory
         return [
             'codigo_rastreio' => $this->faker->unique()->bothify('??##########'),
             'data_recebimento' => $this->faker->dateTimeBetween('-1 month', 'now'),
-            'id_usuario' => \App\Models\Usuario::factory()->create()->id_usuario,
+            'id_usuario' => \App\Models\Usuario::factory()->create()->id,
         ];
     }
 }
