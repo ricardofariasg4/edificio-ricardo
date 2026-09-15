@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('BOLETOS', function (Blueprint $table) {
-            $table->increments('id_boleto');
-            $table->unsignedInteger('id_morador')->index('idx_boleto_morador_idmorador');
+        Schema::create('boletos', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('id_morador')->index('idx_boleto_morador_idmorador');
             $table->unsignedTinyInteger('status_pagamento')->nullable();
             $table->date('vencimento')->nullable();
             $table->decimal('valor', 10)->unsigned()->nullable();
-            $table->unsignedInteger('id_notificador')->index('idx_boleto_usuario_idnotificador');
+            $table->unsignedBigInteger('id_notificador')->index('idx_boleto_usuario_idnotificador');
             $table->timestamps();
         });
     }
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('BOLETOS');
+        Schema::dropIfExists('boletos');
     }
 };

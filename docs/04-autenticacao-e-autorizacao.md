@@ -3,7 +3,7 @@
 ## Autenticação
 
 - **Guard**: `web` (sessão), definido em `config/auth.php`, com o *provider* Eloquent
-  apontando para o model `Usuario` (tabela `USUARIOS`) — não a tabela `users` padrão.
+  apontando para o model `Usuario` (tabela `usuarios`) — não a tabela `users` padrão.
 - **`AuthController`** (`app/Http/Controllers/AuthController.php`):
   - `POST /login` — troca `senha` por `password` internamente e usa `Auth::attempt`;
     regenera a sessão após sucesso.

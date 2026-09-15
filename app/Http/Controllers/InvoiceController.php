@@ -31,7 +31,7 @@ class InvoiceController extends Controller
             } else {
                 // Morador vê apenas seus próprios boletos
                 $user = Auth::user();
-                $invoices = $this->invoiceService->getInvoicesByMorador($user->id_usuario);
+                $invoices = $this->invoiceService->getInvoicesByMorador($user->id);
             }
             return response()->json($invoices, Response::HTTP_OK);
         } catch (\Exception $e) {

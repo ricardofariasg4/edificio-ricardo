@@ -18,8 +18,8 @@ class PackageControllerTest extends TestCase
         $morador1 = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::MORADOR]);
         $morador2 = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::MORADOR]);
 
-        Encomenda::factory()->create(['id_usuario' => $morador1->id_usuario]);
-        Encomenda::factory()->create(['id_usuario' => $morador2->id_usuario]);
+        Encomenda::factory()->create(['id_usuario' => $morador1->id]);
+        Encomenda::factory()->create(['id_usuario' => $morador2->id]);
 
         $response = $this->actingAs($sindico)->getJson('/packages');
 
@@ -32,8 +32,8 @@ class PackageControllerTest extends TestCase
         $morador1 = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::MORADOR]);
         $morador2 = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::MORADOR]);
 
-        Encomenda::factory()->create(['id_usuario' => $morador1->id_usuario]);
-        Encomenda::factory()->create(['id_usuario' => $morador2->id_usuario]);
+        Encomenda::factory()->create(['id_usuario' => $morador1->id]);
+        Encomenda::factory()->create(['id_usuario' => $morador2->id]);
 
         $response = $this->actingAs($morador1)->getJson('/packages');
 
@@ -49,13 +49,13 @@ class PackageControllerTest extends TestCase
         $response = $this->actingAs($sindico)->postJson('/package', [
             'codigo_rastreio' => 'BR123456789',
             'data_recebimento' => '2024-09-15',
-            'id_usuario' => $morador->id_usuario,
+            'id_usuario' => $morador->id,
         ]);
 
         $response->assertStatus(201);
-        $this->assertDatabaseHas('ENCOMENDAS', [
+        $this->assertDatabaseHas('encomendas', [
             'codigo_rastreio' => 'BR123456789',
-            'id_usuario' => $morador->id_usuario,
+            'id_usuario' => $morador->id,
         ]);
     }
 
@@ -67,7 +67,7 @@ class PackageControllerTest extends TestCase
         $response = $this->actingAs($morador1)->postJson('/package', [
             'codigo_rastreio' => 'BR123456789',
             'data_recebimento' => '2024-09-15',
-            'id_usuario' => $morador2->id_usuario,
+            'id_usuario' => $morador2->id,
         ]);
 
         $response->assertStatus(403);
@@ -77,20 +77,20 @@ class PackageControllerTest extends TestCase
     {
         $sindico = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
         $morador = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::MORADOR]);
-        $encomenda = Encomenda::factory()->create(['id_usuario' => $morador->id_usuario]);
+        $encomenda = Encomenda::factory()->create(['id_usuario' => $morador->id]);
 
-        $response = $this->actingAs($sindico)->getJson("/package/{$encomenda->id_encomenda}");
+        $response = $this->actingAs($sindico)->getJson("/package/{$encomenda->id}");
 
         $response->assertStatus(200);
-        $this->assertEquals($encomenda->id_encomenda, $response->json('id_encomenda'));
+        $this->assertEquals($encomenda->id, $response->json('id'));
     }
 
     public function test_morador_ve_sua_encomenda(): void
     {
         $morador = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::MORADOR]);
-        $encomenda = Encomenda::factory()->create(['id_usuario' => $morador->id_usuario]);
+        $encomenda = Encomenda::factory()->create(['id_usuario' => $morador->id]);
 
-        $response = $this->actingAs($morador)->getJson("/package/{$encomenda->id_encomenda}");
+        $response = $this->actingAs($morador)->getJson("/package/{$encomenda->id}");
 
         $response->assertStatus(200);
     }
@@ -99,9 +99,9 @@ class PackageControllerTest extends TestCase
     {
         $morador1 = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::MORADOR]);
         $morador2 = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::MORADOR]);
-        $encomenda = Encomenda::factory()->create(['id_usuario' => $morador2->id_usuario]);
+        $encomenda = Encomenda::factory()->create(['id_usuario' => $morador2->id]);
 
-        $response = $this->actingAs($morador1)->getJson("/package/{$encomenda->id_encomenda}");
+        $response = $this->actingAs($morador1)->getJson("/package/{$encomenda->id}");
 
         $response->assertStatus(403);
     }
@@ -110,16 +110,16 @@ class PackageControllerTest extends TestCase
     {
         $sindico = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
         $morador = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::MORADOR]);
-        $encomenda = Encomenda::factory()->create(['id_usuario' => $morador->id_usuario]);
+        $encomenda = Encomenda::factory()->create(['id_usuario' => $morador->id]);
 
-        $response = $this->actingAs($sindico)->putJson("/package/{$encomenda->id_encomenda}", [
+        $response = $this->actingAs($sindico)->putJson("/package/{$encomenda->id}", [
             'codigo_rastreio' => 'BR987654321',
             'data_recebimento' => '2024-09-20',
         ]);
 
         $response->assertStatus(200);
-        $this->assertDatabaseHas('ENCOMENDAS', [
-            'id_encomenda' => $encomenda->id_encomenda,
+        $this->assertDatabaseHas('encomendas', [
+            'id' => $encomenda->id,
             'codigo_rastreio' => 'BR987654321',
         ]);
     }
@@ -128,11 +128,11 @@ class PackageControllerTest extends TestCase
     {
         $sindico = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
         $morador = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::MORADOR]);
-        $encomenda = Encomenda::factory()->create(['id_usuario' => $morador->id_usuario]);
+        $encomenda = Encomenda::factory()->create(['id_usuario' => $morador->id]);
 
-        $response = $this->actingAs($sindico)->deleteJson("/package/{$encomenda->id_encomenda}");
+        $response = $this->actingAs($sindico)->deleteJson("/package/{$encomenda->id}");
 
         $response->assertStatus(200);
-        $this->assertDatabaseMissing('ENCOMENDAS', ['id_encomenda' => $encomenda->id_encomenda]);
+        $this->assertDatabaseMissing('encomendas', ['id' => $encomenda->id]);
     }
 }

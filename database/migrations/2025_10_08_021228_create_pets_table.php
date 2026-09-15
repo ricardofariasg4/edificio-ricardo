@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('PETS', function (Blueprint $table) {
-            $table->increments('id_pet');
+        Schema::create('pets', function (Blueprint $table) {
+            $table->id();
             $table->string('nome')->nullable();
             $table->unsignedTinyInteger('peso')->nullable();
             $table->boolean('vacinado')->nullable();
             $table->char('cpf', 11)->nullable()->unique('cpf_unique');
-            $table->unsignedInteger('id_morador')->index('idx_pet_morador_idmorador');
+            $table->unsignedBigInteger('id_morador')->index('idx_pet_morador_idmorador');
             $table->timestamps();
         });
     }
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('PETS');
+        Schema::dropIfExists('pets');
     }
 };

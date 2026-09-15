@@ -28,7 +28,7 @@ class PackageArrivedNotification extends Notification
     {
         return [
             'tipo' => 'encomenda',
-            'id_encomenda' => $this->package->id_encomenda,
+            'id_encomenda' => $this->package->id,
             'codigo_rastreio' => $this->package->codigo_rastreio,
             'mensagem' => "Sua encomenda (código {$this->package->codigo_rastreio}) chegou na portaria.",
         ];

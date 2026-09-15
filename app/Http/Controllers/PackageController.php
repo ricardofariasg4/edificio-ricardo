@@ -31,7 +31,7 @@ class PackageController extends Controller
             } else {
                 // Usuário vê apenas suas próprias encomendas
                 $user = Auth::user();
-                $packages = $this->packageService->getPackagesByUsuario($user->id_usuario);
+                $packages = $this->packageService->getPackagesByUsuario($user->id);
             }
             return response()->json($packages, Response::HTTP_OK);
         } catch (\Exception $e) {

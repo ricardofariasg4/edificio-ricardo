@@ -34,7 +34,7 @@ class MaintenanceScheduledNotification extends Notification
             'titulo' => $this->titulo,
             'descricao' => $this->descricao,
             'data_agendada' => $this->dataAgendada->format('Y-m-d H:i:s'),
-            'agendado_por' => $this->agendadoPor->id_usuario,
+            'agendado_por' => $this->agendadoPor->id,
             'mensagem' => "Manutenção programada: {$this->titulo}.",
         ];
     }

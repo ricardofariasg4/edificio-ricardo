@@ -44,12 +44,12 @@ class GlobalExceptionHandlingTest extends TestCase
         $sindico = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
         $morador = Morador::factory()->create();
         Boleto::factory()->create([
-            'id_morador' => $morador->id_usuario,
+            'id_morador' => $morador->usuario_id,
             'status_pagamento' => 0,
-            'id_notificador' => $sindico->id_usuario,
+            'id_notificador' => $sindico->id,
         ]);
 
-        $response = $this->actingAs($sindico)->deleteJson("/user/{$morador->id_usuario}");
+        $response = $this->actingAs($sindico)->deleteJson("/user/{$morador->usuario_id}");
 
         $response->assertStatus(400);
         $response->assertExactJson(['error' => 'Erro interno do servidor.']);
@@ -57,6 +57,6 @@ class GlobalExceptionHandlingTest extends TestCase
         $this->assertFileExists($this->logPath);
         $logged = json_decode(trim(file_get_contents($this->logPath)), true);
         $this->assertSame('App\\Exceptions\\EntityDeleteException', $logged['context']['exception']);
-        $this->assertDatabaseHas('MORADORES', ['id_usuario' => $morador->id_usuario]);
+        $this->assertDatabaseHas('moradores', ['usuario_id' => $morador->usuario_id]);
     }
 }

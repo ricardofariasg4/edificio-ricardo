@@ -56,7 +56,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Gate::define('update-internal-member', function (Usuario $user, Request $request) {
-            $value = $user->id_usuario === (int) $request->route('id');
+            $value = $user->id === (int) $request->route('id');
             return $value;
         });
 
@@ -65,14 +65,14 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Gate::define('delete-user', function (Usuario $user, int $targetUserId) {
-            if ($user->id_usuario === $targetUserId) {
+            if ($user->id === $targetUserId) {
                 return false;
             }
             return in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO]);
         });
 
         Gate::define('view-user', function (Usuario $user, int $targetUserId) {
-            if ($user->id_usuario === $targetUserId) {
+            if ($user->id === $targetUserId) {
                 return true;
             }
             return in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO]);
@@ -89,7 +89,7 @@ class AppServiceProvider extends ServiceProvider
             }
 
             if ($user->tipo_usuario === PeopleBuilding::MORADOR) {
-                return $user->id_usuario === $pet->id_morador;
+                return $user->id === $pet->id_morador;
             }
             return false;
         });
@@ -100,7 +100,7 @@ class AppServiceProvider extends ServiceProvider
             }
 
             if ($user->tipo_usuario === PeopleBuilding::MORADOR) {
-                return $user->id_usuario === $idMorador;
+                return $user->id === $idMorador;
             }
             return false;
         });
@@ -111,7 +111,7 @@ class AppServiceProvider extends ServiceProvider
             }
 
             if ($user->tipo_usuario === PeopleBuilding::MORADOR) {
-                return $user->id_usuario === $pet->id_morador;
+                return $user->id === $pet->id_morador;
             }
             return false;
         });
@@ -122,7 +122,7 @@ class AppServiceProvider extends ServiceProvider
             }
 
             if ($user->tipo_usuario === PeopleBuilding::MORADOR) {
-                return $user->id_usuario === $pet->id_morador;
+                return $user->id === $pet->id_morador;
             }
             return false;
         });
@@ -138,7 +138,7 @@ class AppServiceProvider extends ServiceProvider
             }
             // Morador pode ver apenas seus próprios boletos
             if ($user->tipo_usuario === PeopleBuilding::MORADOR) {
-                return $user->id_usuario === $invoice->id_morador;
+                return $user->id === $invoice->id_morador;
             }
             return false;
         });
@@ -164,7 +164,7 @@ class AppServiceProvider extends ServiceProvider
             if (in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO])) {
                 return true;
             }
-            return $user->id_usuario === $package->id_usuario;
+            return $user->id === $package->id_usuario;
         });
 
         Gate::define('register-package', function (Usuario $user) {
@@ -180,7 +180,7 @@ class AppServiceProvider extends ServiceProvider
             if (in_array($user->tipo_usuario, [PeopleBuilding::ADMIN, PeopleBuilding::SINDICO, PeopleBuilding::PORTEIRO])) {
                 return true;
             }
-            return $user->id_usuario === $move->id_morador;
+            return $user->id === $move->id_morador;
         });
 
         Gate::define('register-move', function (Usuario $user, int $idMorador) {
@@ -188,7 +188,7 @@ class AppServiceProvider extends ServiceProvider
                 return true;
             }
             // Morador só pode agendar sua própria mudança
-            return $user->id_usuario === $idMorador;
+            return $user->id === $idMorador;
         });
 
         Gate::define('approve-move', function (Usuario $user) {

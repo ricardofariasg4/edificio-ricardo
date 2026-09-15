@@ -26,7 +26,7 @@ class MoveAutoDecisionTest extends TestCase
         return Mudanca::factory()->create([
             'status' => $status,
             'data' => $data,
-            'id_morador' => Morador::factory()->create()->id_usuario,
+            'id_morador' => Morador::factory()->create()->usuario_id,
             'id_autorizador' => $idAutorizador,
         ]);
     }
@@ -35,13 +35,13 @@ class MoveAutoDecisionTest extends TestCase
     {
         Carbon::setTestNow('2026-01-10 10:00:00');
         $porteiro = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::PORTEIRO]);
-        $mudanca = $this->criarMudanca('em_andamento', Carbon::parse('2026-01-10 20:00:00'), idAutorizador: $porteiro->id_usuario);
+        $mudanca = $this->criarMudanca('em_andamento', Carbon::parse('2026-01-10 20:00:00'), idAutorizador: $porteiro->id);
 
         $decididas = app(MoveService::class)->autoDecidePendingMoves();
 
         $this->assertCount(1, $decididas);
-        $this->assertDatabaseHas('MUDANCAS', [
-            'id_mudanca' => $mudanca->id_mudanca,
+        $this->assertDatabaseHas('mudancas', [
+            'id' => $mudanca->id,
             'status' => 'aprovado',
             'observacao' => null,
         ]);
@@ -55,8 +55,8 @@ class MoveAutoDecisionTest extends TestCase
         $decididas = app(MoveService::class)->autoDecidePendingMoves();
 
         $this->assertCount(1, $decididas);
-        $this->assertDatabaseHas('MUDANCAS', [
-            'id_mudanca' => $mudanca->id_mudanca,
+        $this->assertDatabaseHas('mudancas', [
+            'id' => $mudanca->id,
             'status' => 'recusado',
             'observacao' => 'Ausência de aprovação',
         ]);
@@ -70,8 +70,8 @@ class MoveAutoDecisionTest extends TestCase
         $decididas = app(MoveService::class)->autoDecidePendingMoves();
 
         $this->assertCount(0, $decididas);
-        $this->assertDatabaseHas('MUDANCAS', [
-            'id_mudanca' => $mudanca->id_mudanca,
+        $this->assertDatabaseHas('mudancas', [
+            'id' => $mudanca->id,
             'status' => 'pendente',
         ]);
     }
@@ -80,13 +80,13 @@ class MoveAutoDecisionTest extends TestCase
     {
         Carbon::setTestNow('2026-01-10 10:00:00');
         $sindico = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
-        $mudanca = $this->criarMudanca('aprovado', Carbon::parse('2026-01-10 12:00:00'), idAutorizador: $sindico->id_usuario);
+        $mudanca = $this->criarMudanca('aprovado', Carbon::parse('2026-01-10 12:00:00'), idAutorizador: $sindico->id);
 
         $decididas = app(MoveService::class)->autoDecidePendingMoves();
 
         $this->assertCount(0, $decididas);
-        $this->assertDatabaseHas('MUDANCAS', [
-            'id_mudanca' => $mudanca->id_mudanca,
+        $this->assertDatabaseHas('mudancas', [
+            'id' => $mudanca->id,
             'status' => 'aprovado',
         ]);
     }
@@ -99,8 +99,8 @@ class MoveAutoDecisionTest extends TestCase
         $decididas = app(MoveService::class)->autoDecidePendingMoves();
 
         $this->assertCount(0, $decididas);
-        $this->assertDatabaseHas('MUDANCAS', [
-            'id_mudanca' => $mudanca->id_mudanca,
+        $this->assertDatabaseHas('mudancas', [
+            'id' => $mudanca->id,
             'status' => 'recusado',
         ]);
     }
@@ -114,8 +114,8 @@ class MoveAutoDecisionTest extends TestCase
             ->expectsOutputToContain('1 mudança(s) decidida(s) automaticamente.')
             ->assertExitCode(0);
 
-        $this->assertDatabaseHas('MUDANCAS', [
-            'id_mudanca' => $mudanca->id_mudanca,
+        $this->assertDatabaseHas('mudancas', [
+            'id' => $mudanca->id,
             'status' => 'recusado',
         ]);
     }

@@ -89,7 +89,7 @@ class MoveService
                 ? ['status' => 'aprovado', 'observacao' => null]
                 : ['status' => 'recusado', 'observacao' => 'Ausência de aprovação'];
 
-            $decided[] = $this->moveRepository->update($move->id_mudanca, $data)->getAttributes();
+            $decided[] = $this->moveRepository->update($move->id, $data)->getAttributes();
         }
 
         return $decided;
@@ -115,7 +115,7 @@ class MoveService
 
         $data = [
             'status' => $newStatus,
-            'id_autorizador' => $autorizador->id_usuario,
+            'id_autorizador' => $autorizador->id,
             'observacao' => $decision === 'recusado' ? $normalizedObservation : null,
         ];
 

@@ -11,9 +11,6 @@ class Boleto extends Model
     /** @use HasFactory<\Database\Factories\BoletoFactory> */
     use HasFactory;
 
-    protected $table = 'BOLETOS';
-    protected $primaryKey = 'id_boleto';
-
     protected $fillable = [
         'status_pagamento',
         'vencimento',
@@ -29,6 +26,6 @@ class Boleto extends Model
 
     public function pertenceAoMorador(): BelongsTo
     {
-        return $this->belongsTo(Morador::class, 'id_morador');
+        return $this->belongsTo(Morador::class, 'id_morador', 'usuario_id');
     }
 }

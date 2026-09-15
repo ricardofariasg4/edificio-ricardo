@@ -91,7 +91,7 @@ handler padrão do Laravel (erro 500 genérico). Ver detalhes em
 ## Autenticação
 
 O guard padrão (`config/auth.php`) usa sessão (`driver: session`) com o Eloquent
-Provider apontando para o model `Usuario` (tabela `USUARIOS`, não a tabela `users`
+Provider apontando para o model `Usuario` (tabela `usuarios`, não a tabela `users`
 padrão do Laravel). O pacote `laravel/sanctum` está instalado (inclusive com a
 migration `personal_access_tokens`), mas não há uso ativo de tokens de API — toda a
 autenticação hoje é por sessão via `routes/web.php` (`routes/api.php` está vazio).

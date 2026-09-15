@@ -17,13 +17,13 @@ class BoletoFactory extends Factory
     public function definition(): array
     {
         return [
-            'id_morador' => \App\Models\Morador::inRandomOrder()->value('id_usuario'),
+            'id_morador' => \App\Models\Morador::inRandomOrder()->value('usuario_id'),
             'status_pagamento' => $this->faker->numberBetween(0, 1),
             'vencimento' => $this->faker->dateTimeBetween('+1 week', '+1 month'),
             'valor' => $this->faker->randomFloat(2, 250, 450),
             'id_notificador' => $this->faker->randomElement([
-                \App\Models\Sindico::inRandomOrder()->value('id_usuario'),
-                \App\Models\Porteiro::inRandomOrder()->value('id_usuario'),
+                \App\Models\Sindico::inRandomOrder()->value('usuario_id'),
+                \App\Models\Porteiro::inRandomOrder()->value('usuario_id'),
             ]),
         ];
     }

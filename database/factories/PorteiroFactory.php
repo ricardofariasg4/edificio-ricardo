@@ -17,7 +17,7 @@ class PorteiroFactory extends Factory
     public function definition(): array
     {
         return [
-            'id_usuario' => \App\Models\Usuario::factory()->create(['tipo_usuario' => 'porteiro'])->id_usuario,
+            'usuario_id' => \App\Models\Usuario::factory()->create(['tipo_usuario' => 'porteiro'])->id,
             'turno_de_trabalho' => $this->faker->randomElement(['M', 'T', 'N']),
         ];
     }

@@ -24,7 +24,7 @@ class AuthControllerTest extends TestCase
         ]);
 
         $response->assertStatus(201);
-        $this->assertDatabaseHas('USUARIOS', [
+        $this->assertDatabaseHas('usuarios', [
             'email' => 'novo.morador@example.com',
             'tipo_usuario' => 'morador',
         ]);
@@ -42,7 +42,7 @@ class AuthControllerTest extends TestCase
         ]);
 
         $response->assertStatus(422);
-        $this->assertDatabaseMissing('USUARIOS', ['email' => 'sem.tipo@example.com']);
+        $this->assertDatabaseMissing('usuarios', ['email' => 'sem.tipo@example.com']);
     }
 
     public function test_registro_com_tipo_usuario_invalido_e_rejeitado(): void
@@ -58,7 +58,7 @@ class AuthControllerTest extends TestCase
         ]);
 
         $response->assertStatus(422);
-        $this->assertDatabaseMissing('USUARIOS', ['email' => 'tipo.invalido@example.com']);
+        $this->assertDatabaseMissing('usuarios', ['email' => 'tipo.invalido@example.com']);
     }
 
     public function test_morador_nao_pode_registrar_novo_usuario(): void
@@ -74,7 +74,7 @@ class AuthControllerTest extends TestCase
         ]);
 
         $response->assertStatus(403);
-        $this->assertDatabaseMissing('USUARIOS', ['email' => 'bloqueado@example.com']);
+        $this->assertDatabaseMissing('usuarios', ['email' => 'bloqueado@example.com']);
     }
 
     public function test_sindico_pode_registrar_porteiro(): void
@@ -90,7 +90,7 @@ class AuthControllerTest extends TestCase
         ]);
 
         $response->assertStatus(201);
-        $this->assertDatabaseHas('USUARIOS', [
+        $this->assertDatabaseHas('usuarios', [
             'email' => 'novo.porteiro@example.com',
             'tipo_usuario' => 'porteiro',
         ]);
@@ -115,7 +115,7 @@ class AuthControllerTest extends TestCase
         ]);
 
         $response->assertStatus(201);
-        $this->assertDatabaseHas('USUARIOS', ['email' => 'novo.sindico@example.com']);
+        $this->assertDatabaseHas('usuarios', ['email' => 'novo.sindico@example.com']);
     }
 
     public function test_porteiro_nao_pode_registrar_sindico_via_endpoint_user(): void
@@ -135,7 +135,7 @@ class AuthControllerTest extends TestCase
         ]);
 
         $response->assertStatus(403);
-        $this->assertDatabaseMissing('USUARIOS', ['email' => 'novo.sindico.2@example.com']);
+        $this->assertDatabaseMissing('usuarios', ['email' => 'novo.sindico.2@example.com']);
     }
 
     public function test_morador_pode_registrar_visitante_via_endpoint_user(): void
@@ -152,7 +152,7 @@ class AuthControllerTest extends TestCase
         ]);
 
         $response->assertStatus(201);
-        $this->assertDatabaseHas('USUARIOS', [
+        $this->assertDatabaseHas('usuarios', [
             'email' => 'novo.visitante@example.com',
             'tipo_usuario' => 'visitante',
         ]);
@@ -171,6 +171,6 @@ class AuthControllerTest extends TestCase
         ]);
 
         $response->assertStatus(403);
-        $this->assertDatabaseMissing('USUARIOS', ['email' => 'novo.usuario@example.com']);
+        $this->assertDatabaseMissing('usuarios', ['email' => 'novo.usuario@example.com']);
     }
 }

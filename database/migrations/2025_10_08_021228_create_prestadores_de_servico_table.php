@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('SINDICOS', function (Blueprint $table) {
-            $table->foreign(['id_usuario'], 'fk_sindico_usuario_usuario')->references(['id_usuario'])->on('USUARIOS')->onUpdate('no action')->onDelete('cascade');
+        Schema::create('prestadores_de_servico', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('usuario_id')->unique('idx_prestadores_usuario_id');
+            $table->dateTime('data_ultimo_trabalho')->nullable();
+            $table->timestamps();
         });
     }
 
@@ -21,8 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('SINDICOS', function (Blueprint $table) {
-            $table->dropForeign('fk_sindico_usuario_usuario');
-        });
+        Schema::dropIfExists('prestadores_de_servico');
     }
 };

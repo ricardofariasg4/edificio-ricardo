@@ -18,19 +18,19 @@ class MoveControllerTest extends TestCase
         $sindico = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
         $morador = Morador::factory()->create();
         $move = Mudanca::factory()->create([
-            'id_morador' => $morador->id_usuario,
+            'id_morador' => $morador->usuario_id,
             'status' => 'pendente',
         ]);
 
-        $response = $this->actingAs($sindico)->postJson("/move/{$move->id_mudanca}/decision", [
+        $response = $this->actingAs($sindico)->postJson("/move/{$move->id}/decision", [
             'decision' => 'aprovado',
         ]);
 
         $response->assertStatus(200);
-        $this->assertDatabaseHas('MUDANCAS', [
-            'id_mudanca' => $move->id_mudanca,
+        $this->assertDatabaseHas('mudancas', [
+            'id' => $move->id,
             'status' => 'aprovado',
-            'id_autorizador' => $sindico->id_usuario,
+            'id_autorizador' => $sindico->id,
         ]);
     }
 
@@ -39,19 +39,19 @@ class MoveControllerTest extends TestCase
         $porteiro = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::PORTEIRO]);
         $morador = Morador::factory()->create();
         $move = Mudanca::factory()->create([
-            'id_morador' => $morador->id_usuario,
+            'id_morador' => $morador->usuario_id,
             'status' => 'pendente',
         ]);
 
-        $response = $this->actingAs($porteiro)->postJson("/move/{$move->id_mudanca}/decision", [
+        $response = $this->actingAs($porteiro)->postJson("/move/{$move->id}/decision", [
             'decision' => 'aprovado',
         ]);
 
         $response->assertStatus(200);
-        $this->assertDatabaseHas('MUDANCAS', [
-            'id_mudanca' => $move->id_mudanca,
+        $this->assertDatabaseHas('mudancas', [
+            'id' => $move->id,
             'status' => 'em_andamento',
-            'id_autorizador' => $porteiro->id_usuario,
+            'id_autorizador' => $porteiro->id,
         ]);
     }
 
@@ -60,21 +60,21 @@ class MoveControllerTest extends TestCase
         $sindico = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
         $morador = Morador::factory()->create();
         $move = Mudanca::factory()->create([
-            'id_morador' => $morador->id_usuario,
+            'id_morador' => $morador->usuario_id,
             'status' => 'pendente',
         ]);
 
-        $response = $this->actingAs($sindico)->postJson("/move/{$move->id_mudanca}/decision", [
+        $response = $this->actingAs($sindico)->postJson("/move/{$move->id}/decision", [
             'decision' => 'recusado',
             'observacao' => '  Conflito com agendar de manutenção  ',
         ]);
 
         $response->assertStatus(200);
-        $this->assertDatabaseHas('MUDANCAS', [
-            'id_mudanca' => $move->id_mudanca,
+        $this->assertDatabaseHas('mudancas', [
+            'id' => $move->id,
             'status' => 'recusado',
             'observacao' => 'Conflito com agendar de manutenção',
-            'id_autorizador' => $sindico->id_usuario,
+            'id_autorizador' => $sindico->id,
         ]);
     }
 
@@ -83,11 +83,11 @@ class MoveControllerTest extends TestCase
         $morador1 = Morador::factory()->create();
         $morador2 = Morador::factory()->create();
         $move = Mudanca::factory()->create([
-            'id_morador' => $morador2->id_usuario,
+            'id_morador' => $morador2->usuario_id,
             'status' => 'pendente',
         ]);
 
-        $response = $this->actingAs($morador1->usuario)->postJson("/move/{$move->id_mudanca}/decision", [
+        $response = $this->actingAs($morador1->usuario)->postJson("/move/{$move->id}/decision", [
             'decision' => 'aprovado',
         ]);
 
@@ -100,12 +100,12 @@ class MoveControllerTest extends TestCase
         $morador2 = Morador::factory()->create();
 
         $move1 = Mudanca::factory()->create([
-            'id_morador' => $morador1->id_usuario,
+            'id_morador' => $morador1->usuario_id,
             'status' => 'recusado',
             'observacao' => 'Conflito de data',
         ]);
         Mudanca::factory()->create([
-            'id_morador' => $morador2->id_usuario,
+            'id_morador' => $morador2->usuario_id,
             'status' => 'recusado',
             'observacao' => 'Fora do horário',
         ]);
@@ -114,7 +114,7 @@ class MoveControllerTest extends TestCase
 
         $response->assertStatus(200);
         $this->assertCount(1, $response->json());
-        $this->assertEquals($move1->id_mudanca, $response->json('0.id_mudanca'));
+        $this->assertEquals($move1->id, $response->json('0.id'));
     }
 
     public function test_listagem_mudancas_recusadas_sindico_vee_todas(): void
@@ -124,12 +124,12 @@ class MoveControllerTest extends TestCase
         $sindico = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
 
         Mudanca::factory()->create([
-            'id_morador' => $morador1->id_usuario,
+            'id_morador' => $morador1->usuario_id,
             'status' => 'recusado',
             'observacao' => 'Conflito de data',
         ]);
         Mudanca::factory()->create([
-            'id_morador' => $morador2->id_usuario,
+            'id_morador' => $morador2->usuario_id,
             'status' => 'recusado',
             'observacao' => 'Fora do horário',
         ]);
@@ -146,7 +146,7 @@ class MoveControllerTest extends TestCase
         $sindico = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
 
         Mudanca::factory()->create([
-            'id_morador' => $morador->id_usuario,
+            'id_morador' => $morador->usuario_id,
             'status' => 'recusado',
             'observacao' => null,
         ]);

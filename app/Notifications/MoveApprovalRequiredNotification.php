@@ -28,7 +28,7 @@ class MoveApprovalRequiredNotification extends Notification
     {
         return [
             'tipo' => 'mudanca_pendente',
-            'id_mudanca' => $this->move->id_mudanca,
+            'id_mudanca' => $this->move->id,
             'id_morador' => $this->move->id_morador,
             'data' => $this->move->data,
             'mensagem' => 'Uma nova mudança foi agendada e aguarda sua aprovação.',

@@ -39,17 +39,17 @@ class UserControllerTest extends TestCase
         $sindico = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
         $morador = Morador::factory()->create();
 
-        $response = $this->actingAs($sindico)->getJson("/user/{$morador->id_usuario}");
+        $response = $this->actingAs($sindico)->getJson("/user/{$morador->usuario_id}");
 
         $response->assertStatus(200);
-        $this->assertEquals($morador->id_usuario, $response->json('id_usuario'));
+        $this->assertEquals($morador->usuario_id, $response->json('id'));
     }
 
     public function test_morador_ve_a_si_mesmo(): void
     {
         $morador = Morador::factory()->create();
 
-        $response = $this->actingAs($morador->usuario)->getJson("/user/{$morador->id_usuario}");
+        $response = $this->actingAs($morador->usuario)->getJson("/user/{$morador->usuario_id}");
 
         $response->assertStatus(200);
     }
@@ -59,7 +59,7 @@ class UserControllerTest extends TestCase
         $morador1 = Morador::factory()->create();
         $morador2 = Morador::factory()->create();
 
-        $response = $this->actingAs($morador1->usuario)->getJson("/user/{$morador2->id_usuario}");
+        $response = $this->actingAs($morador1->usuario)->getJson("/user/{$morador2->usuario_id}");
 
         $response->assertStatus(403);
     }
@@ -69,10 +69,10 @@ class UserControllerTest extends TestCase
         $sindico = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
         $morador = Morador::factory()->create();
 
-        $response = $this->actingAs($sindico)->deleteJson("/user/{$morador->id_usuario}");
+        $response = $this->actingAs($sindico)->deleteJson("/user/{$morador->usuario_id}");
 
         $response->assertStatus(200);
-        $this->assertDatabaseMissing('USUARIOS', ['id_usuario' => $morador->id_usuario]);
+        $this->assertDatabaseMissing('usuarios', ['id' => $morador->usuario_id]);
     }
 
     public function test_sindico_nao_deleta_morador_com_boletos_pendentes(): void
@@ -81,15 +81,15 @@ class UserControllerTest extends TestCase
         $morador = Morador::factory()->create();
 
         Boleto::factory()->create([
-            'id_morador' => $morador->id_usuario,
+            'id_morador' => $morador->usuario_id,
             'status_pagamento' => 0,
-            'id_notificador' => $sindico->id_usuario,
+            'id_notificador' => $sindico->id,
         ]);
 
-        $response = $this->actingAs($sindico)->deleteJson("/user/{$morador->id_usuario}");
+        $response = $this->actingAs($sindico)->deleteJson("/user/{$morador->usuario_id}");
 
         $response->assertStatus(400);
-        $this->assertDatabaseHas('USUARIOS', ['id_usuario' => $morador->id_usuario]);
+        $this->assertDatabaseHas('usuarios', ['id' => $morador->usuario_id]);
     }
 
     public function test_morador_nao_pode_deletar_outro_usuario(): void
@@ -97,7 +97,7 @@ class UserControllerTest extends TestCase
         $morador1 = Morador::factory()->create();
         $morador2 = Morador::factory()->create();
 
-        $response = $this->actingAs($morador1->usuario)->deleteJson("/user/{$morador2->id_usuario}");
+        $response = $this->actingAs($morador1->usuario)->deleteJson("/user/{$morador2->usuario_id}");
 
         $response->assertStatus(403);
     }
@@ -106,7 +106,7 @@ class UserControllerTest extends TestCase
     {
         $sindico = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
 
-        $response = $this->actingAs($sindico)->deleteJson("/user/{$sindico->id_usuario}");
+        $response = $this->actingAs($sindico)->deleteJson("/user/{$sindico->id}");
 
         $response->assertStatus(403);
     }
@@ -116,7 +116,7 @@ class UserControllerTest extends TestCase
         $porteiro = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::PORTEIRO]);
         $morador = Morador::factory()->create();
 
-        $response = $this->actingAs($porteiro)->deleteJson("/user/{$morador->id_usuario}");
+        $response = $this->actingAs($porteiro)->deleteJson("/user/{$morador->usuario_id}");
 
         $response->assertStatus(403);
     }
@@ -130,7 +130,7 @@ class UserControllerTest extends TestCase
         $sindico = Usuario::factory()->create(['tipo_usuario' => PeopleBuilding::SINDICO]);
         $morador = Morador::factory()->create();
 
-        $response = $this->actingAs($sindico)->putJson("/user/{$morador->id_usuario}", [
+        $response = $this->actingAs($sindico)->putJson("/user/{$morador->usuario_id}", [
             'nome' => 'Novo Nome',
         ]);
 
@@ -141,7 +141,7 @@ class UserControllerTest extends TestCase
     {
         $morador = Morador::factory()->create();
 
-        $response = $this->actingAs($morador->usuario)->putJson("/user/{$morador->id_usuario}", [
+        $response = $this->actingAs($morador->usuario)->putJson("/user/{$morador->usuario_id}", [
             'nome' => 'Novo Nome do Morador',
         ]);
 
@@ -153,7 +153,7 @@ class UserControllerTest extends TestCase
         $morador1 = Morador::factory()->create();
         $morador2 = Morador::factory()->create();
 
-        $response = $this->actingAs($morador1->usuario)->putJson("/user/{$morador2->id_usuario}", [
+        $response = $this->actingAs($morador1->usuario)->putJson("/user/{$morador2->usuario_id}", [
             'nome' => 'Nome alterado',
         ]);
 

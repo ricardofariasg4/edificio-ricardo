@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('SINDICOS', function (Blueprint $table) {
-            $table->unsignedInteger('id_usuario')->index('idx_sindico_usuario_idusuario');
-            $table->primary(['id_usuario']);
-            $table->timestamps();
+        Schema::table('encomendas', function (Blueprint $table) {
+            $table->foreign(['id_usuario'], 'fk_encomendas_usuario_id')->references(['id'])->on('usuarios')->onUpdate('no action')->onDelete('cascade');
         });
     }
 
@@ -23,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('SINDICOS');
+        Schema::table('encomendas', function (Blueprint $table) {
+            $table->dropForeign('fk_encomendas_usuario_id');
+        });
     }
 };
